@@ -1,9 +1,9 @@
 ---
-import Base from '../layouts/Base.astro';
-import { useTranslations } from '../i18n';
-const tr = useTranslations('fr');
+import Base from '../../layouts/Base.astro';
+import { useTranslations } from '../../i18n';
+const tr = useTranslations('en');
 ---
-<Base title={tr.title_home} lang="fr">
+<Base title={tr.title_home} lang="en">
 
   <header class="corner">
     <div class="corner-left">
@@ -11,9 +11,9 @@ const tr = useTranslations('fr');
       <span>{tr.region}</span>
     </div>
     <nav class="lang-switcher">
-      <span class="lang-active">{tr.lang_self}</span>
-      <span class="lang-sep">·</span>
       <a href={tr.alt_home}>{tr.lang_other}</a>
+      <span class="lang-sep">·</span>
+      <span class="lang-active">{tr.lang_self}</span>
     </nav>
   </header>
 

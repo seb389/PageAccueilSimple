@@ -1,10 +1,10 @@
 ---
-import Base from '../layouts/Base.astro';
-import { useTranslations } from '../i18n';
-const tr = useTranslations('fr');
+import Base from '../../layouts/Base.astro';
+import { useTranslations } from '../../i18n';
+const tr = useTranslations('en');
 const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfegqGPewOsPUPblSO8QJVq7rGGvE5GtnKkwOLm7_gR_6Ke0w/viewform';
 ---
-<Base title={tr.title_sondage} lang="fr">
+<Base title={tr.title_sondage} lang="en">
 
   <header class="corner">
     <div class="corner-left">
@@ -14,9 +14,9 @@ const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfegqGPewOsPUPblSO8QJ
     <div class="corner-right">
       <a href={tr.back_href} class="back">{tr.back}</a>
       <nav class="lang-switcher">
-        <span class="lang-active">{tr.lang_self}</span>
-        <span class="lang-sep">·</span>
         <a href={tr.alt_sondage}>{tr.lang_other}</a>
+        <span class="lang-sep">·</span>
+        <span class="lang-active">{tr.lang_self}</span>
       </nav>
     </div>
   </header>
@@ -32,7 +32,7 @@ const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfegqGPewOsPUPblSO8QJ
         title={tr.sondage_heading}
         loading="lazy"
       >
-        Chargement…
+        Loading…
       </iframe>
     </div>
     <div class="form-link">
