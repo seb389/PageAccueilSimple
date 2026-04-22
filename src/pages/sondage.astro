@@ -109,7 +109,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 48px 16px 32px;
+    padding: 32px 16px 24px;
   }
 
   .page-title {
@@ -132,7 +132,7 @@
   }
 
   .page-sub {
-    margin-top: 12px;
+    margin-top: 10px;
     font-size: clamp(10px, 1.2vw, 11px);
     letter-spacing: 0.42em;
     text-transform: uppercase;
@@ -141,17 +141,21 @@
   }
 
   .form-wrapper {
-    margin-top: 40px;
+    margin-top: 24px;
+    flex: 1;
     width: 100%;
-    max-width: 760px;
+    max-width: 860px;
     border: 1px solid var(--line);
     animation: fadeUp 1.2s 0.7s ease-out both;
+    display: flex;
+    flex-direction: column;
   }
 
   .form-wrapper iframe {
     display: block;
     width: 100%;
-    height: 680px;
+    flex: 1;
+    min-height: calc(100vh - 220px);
     border: none;
     background: var(--charbon);
   }
@@ -192,7 +196,7 @@
     footer { flex-direction: column; gap: 8px; }
     .page-title::before,
     .page-title::after { display: none; }
-    .form-wrapper iframe { height: 520px; }
+    .form-wrapper iframe { min-height: calc(100vh - 200px); }
   }
 
   @media (prefers-reduced-motion: reduce) {
