@@ -1,0 +1,138 @@
+---
+import Base from '../layouts/Base.astro';
+import { useTranslations } from '../i18n';
+const tr = useTranslations('fr');
+---
+<Base title={tr.title_privacy} lang="fr">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>{tr.region}</span>
+    </div>
+    <div class="corner-right">
+      <a href="/" class="back">{tr.back}</a>
+      <nav class="lang-switcher">
+        <span class="lang-active">{tr.lang_self}</span>
+        <span class="lang-sep">·</span>
+        <a href={tr.alt_privacy}>{tr.lang_other}</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="content-page">
+      <h1>{tr.privacy_title}</h1>
+      <div class="subtitle">{tr.privacy_last_updated}</div>
+
+      <p>
+        Lacet s'engage à protéger la vie privée des personnes qui visitent son site
+        <a href="https://lacet.ca">lacet.ca</a> et qui s'inscrivent à son infolettre.
+        Cette politique explique quels renseignements sont recueillis, comment ils sont
+        utilisés, et quels sont vos droits.
+      </p>
+
+      <h2>1. Responsable du traitement</h2>
+      <p>
+        Lacet (Québec, Canada) est responsable du traitement des renseignements personnels
+        recueillis sur ce site. Pour toute question ou demande, vous pouvez nous écrire à
+        <a href="mailto:info@lacet.ca">info@lacet.ca</a>.
+      </p>
+
+      <h2>2. Renseignements recueillis</h2>
+      <p>Lorsque vous vous inscrivez à notre infolettre, nous recueillons&nbsp;:</p>
+      <ul>
+        <li>Votre adresse de courriel&nbsp;;</li>
+        <li>La langue choisie (français ou anglais) au moment de l'inscription&nbsp;;</li>
+        <li>La date et l'heure de votre consentement.</li>
+      </ul>
+      <p>
+        Aucune autre information n'est demandée ni collectée à votre sujet sans votre
+        consentement explicite.
+      </p>
+
+      <h2>3. Finalité et base légale</h2>
+      <p>
+        Votre adresse courriel est utilisée <strong>uniquement</strong> pour vous envoyer
+        l'infolettre de Lacet (annonces concernant l'ouverture de l'atelier, nouveaux services,
+        événements). Le traitement repose sur votre <strong>consentement explicite</strong>, que
+        vous donnez en cochant la case lors de l'inscription et en confirmant votre courriel
+        via le lien de double opt-in.
+      </p>
+      <p>
+        Vos coordonnées ne sont jamais vendues, louées, ni partagées à des fins publicitaires
+        avec des tiers.
+      </p>
+
+      <h2>4. Sous-traitant</h2>
+      <p>
+        L'envoi de l'infolettre est opéré par <strong>Brevo</strong> (anciennement Sendinblue),
+        société française dont les serveurs sont situés dans l'Union européenne. Brevo agit à
+        titre de sous-traitant au sens de la Loi 25 et du RGPD. Leur politique est consultable
+        à <a href="https://www.brevo.com/fr/legal/privacypolicy/" target="_blank" rel="noopener">brevo.com/fr/legal/privacypolicy</a>.
+      </p>
+
+      <h2>5. Transfert hors du Québec</h2>
+      <p>
+        Comme Brevo est établie en France, vos données sont transférées hors du Québec. La
+        France est reconnue comme offrant un niveau de protection équivalent au Québec dans
+        le cadre du RGPD.
+      </p>
+
+      <h2>6. Durée de conservation</h2>
+      <p>
+        Votre adresse courriel est conservée tant que vous êtes abonné·e à l'infolettre.
+        Vous pouvez vous désabonner à tout moment via le lien présent en pied de chaque
+        courriel. À la désinscription, votre adresse est supprimée de nos listes d'envoi
+        dans un délai maximal de 30 jours.
+      </p>
+
+      <h2>7. Vos droits</h2>
+      <p>Conformément à la Loi 25 et au RGPD, vous disposez des droits suivants&nbsp;:</p>
+      <ul>
+        <li><strong>Accès</strong>&nbsp;: savoir quelles données nous détenons à votre sujet&nbsp;;</li>
+        <li><strong>Rectification</strong>&nbsp;: corriger une information inexacte&nbsp;;</li>
+        <li><strong>Effacement</strong>&nbsp;: demander la suppression de vos données&nbsp;;</li>
+        <li><strong>Retrait du consentement</strong>&nbsp;: à tout moment, sans justification&nbsp;;</li>
+        <li><strong>Portabilité</strong>&nbsp;: recevoir vos données dans un format lisible&nbsp;;</li>
+        <li><strong>Plainte</strong>&nbsp;: auprès de la Commission d'accès à l'information du
+          Québec (<a href="https://www.cai.gouv.qc.ca" target="_blank" rel="noopener">cai.gouv.qc.ca</a>)
+          ou d'une autorité compétente européenne (CNIL en France).</li>
+      </ul>
+      <p>
+        Pour exercer l'un de ces droits, écrivez-nous à
+        <a href="mailto:info@lacet.ca">info@lacet.ca</a>. Nous répondrons dans les 30 jours.
+      </p>
+
+      <h2>8. Cookies et suivi</h2>
+      <p>
+        Ce site n'utilise <strong>aucun cookie de suivi publicitaire</strong>, aucun outil
+        d'analyse tiers (type Google Analytics), et ne dépose aucun fichier sur votre appareil
+        dans un but marketing. Seuls les fichiers techniques strictement nécessaires au
+        fonctionnement du site (hébergement Cloudflare) peuvent être utilisés.
+      </p>
+
+      <h2>9. Sécurité</h2>
+      <p>
+        Les échanges entre votre navigateur et nos serveurs sont chiffrés via HTTPS. Les clés
+        d'accès aux services tiers (comme Brevo) sont stockées chiffrées et ne sont jamais
+        exposées publiquement.
+      </p>
+
+      <h2>10. Modifications</h2>
+      <p>
+        Cette politique peut être mise à jour pour refléter des changements dans nos pratiques
+        ou la législation. La date de dernière mise à jour est indiquée en haut de cette page.
+        En cas de modification substantielle, les abonné·e·s à l'infolettre seront notifié·e·s
+        par courriel.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <span>{tr.footer_copy}</span>
+    <span class="footer-center"><a href={tr.nl_privacy_href}>{tr.footer_privacy}</a></span>
+    <span>{tr.footer_domain}</span>
+  </footer>
+
+</Base>

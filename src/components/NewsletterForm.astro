@@ -1,0 +1,116 @@
+---
+import { useTranslations, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const tr = useTranslations(lang);
+---
+
+<section class="newsletter" aria-labelledby="nl-label">
+  <div class="nl-heading">
+    <span class="nl-label" id="nl-label">{tr.nl_label}</span>
+    <span class="nl-prompt">{tr.nl_prompt}</span>
+  </div>
+
+  <form class="nl-form" data-lang={lang} novalidate>
+    <div class="nl-input-group">
+      <input
+        type="email"
+        name="email"
+        inputmode="email"
+        autocomplete="email"
+        placeholder={tr.nl_placeholder}
+        aria-label={tr.nl_placeholder}
+        required
+      />
+      <button type="submit" aria-label={tr.nl_submit_aria}>
+        <span class="nl-submit-label">{tr.nl_submit}</span>
+        <span class="nl-arrow" aria-hidden="true">→</span>
+      </button>
+    </div>
+
+    <label class="nl-consent">
+      <input type="checkbox" name="consent" required />
+      <span>
+        {tr.nl_consent}{' '}
+        <a href={tr.nl_privacy_href}>{tr.nl_privacy_link}</a>.
+      </span>
+    </label>
+
+    <p class="nl-error" role="alert" hidden></p>
+  </form>
+
+  <div class="nl-success" hidden role="status">
+    <div class="nl-success-title">{tr.nl_success_title}</div>
+    <p class="nl-success-body">{tr.nl_success_body}</p>
+  </div>
+</section>
+
+<script is:inline define:vars={{ messages: {
+  invalid_email:    tr.nl_err_invalid,
+  consent_required: tr.nl_err_consent,
+  service_error:    tr.nl_err_service,
+  network_error:    tr.nl_err_network,
+  default:          tr.nl_err_default,
+  loading:          tr.nl_loading,
+  submit:           tr.nl_submit,
+} }}>
+(function () {
+  const form = document.querySelector('.nl-form');
+  if (!form) return;
+  const input    = form.querySelector('input[name=email]');
+  const consent  = form.querySelector('input[name=consent]');
+  const button   = form.querySelector('button[type=submit]');
+  const btnLabel = form.querySelector('.nl-submit-label');
+  const errorEl  = form.querySelector('.nl-error');
+  const success  = document.querySelector('.nl-success');
+  const lang     = form.dataset.lang || 'fr';
+
+  function showError(code) {
+    errorEl.textContent = messages[code] || messages.default;
+    errorEl.hidden = false;
+  }
+
+  function clearError() {
+    errorEl.hidden = true;
+    errorEl.textContent = '';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const email = input.value.trim();
+    if (!consent.checked) { showError('consent_required'); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('invalid_email'); return; }
+
+    button.disabled = true;
+    btnLabel.textContent = messages.loading;
+
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email, consent: true, lang }),
+      });
+      const data = await res.json().catch(() => ({ ok: false, error: 'service_error' }));
+
+      if (data.ok) {
+        form.hidden = true;
+        success.hidden = false;
+        success.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        showError(data.error || 'default');
+        button.disabled = false;
+        btnLabel.textContent = messages.submit;
+      }
+    } catch {
+      showError('network_error');
+      button.disabled = false;
+      btnLabel.textContent = messages.submit;
+    }
+  });
+})();
+</script>

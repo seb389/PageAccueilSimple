@@ -1,11 +1,9 @@
 ---
 import Base from '../../layouts/Base.astro';
-import NewsletterForm from '../../components/NewsletterForm.astro';
 import { useTranslations } from '../../i18n';
-
 const tr = useTranslations('en');
 ---
-<Base title={tr.title_home} lang="en">
+<Base title={tr.title_thanks} lang="en">
 
   <header class="corner">
     <div class="corner-left">
@@ -13,24 +11,19 @@ const tr = useTranslations('en');
       <span>{tr.region}</span>
     </div>
     <nav class="lang-switcher">
-      <a href={tr.alt_home}>{tr.lang_other}</a>
+      <a href={tr.alt_thanks}>{tr.lang_other}</a>
       <span class="lang-sep">·</span>
       <span class="lang-active">{tr.lang_self}</span>
     </nav>
   </header>
 
   <main class="centered">
-    <h1 class="wordmark">LACET</h1>
-    <div class="surligne">
-      {tr.tagline_left}<span class="rule"></span>{tr.tagline_right}
-    </div>
-    <div class="status">{tr.status}</div>
-
-    <NewsletterForm lang="en" />
-
-    <div class="contact">
-      <span class="label">{tr.contact_label}</span>
-      <a href="mailto:info@lacet.ca">info@lacet.ca</a>
+    <div class="content-page">
+      <div class="big-center">
+        <h1>{tr.thanks_title}</h1>
+        <p>{tr.thanks_body}</p>
+        <a href="/en/" class="home-link">{tr.thanks_back}</a>
+      </div>
     </div>
   </main>
 

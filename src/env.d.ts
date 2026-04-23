@@ -1,0 +1,20 @@
+/// <reference types="astro/client" />
+/// <reference types="@cloudflare/workers-types" />
+
+declare global {
+  interface Env {
+    BREVO_API_KEY: string;
+    BREVO_LIST_ID_FR: string;
+    BREVO_LIST_ID_EN: string;
+    BREVO_TEMPLATE_ID_FR: string;
+    BREVO_TEMPLATE_ID_EN: string;
+    SITE_URL: string;
+    PENDING_SIGNUPS: KVNamespace;
+  }
+}
+
+declare module 'cloudflare:workers' {
+  export const env: Env;
+}
+
+export {};

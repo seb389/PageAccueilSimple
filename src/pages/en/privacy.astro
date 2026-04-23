@@ -1,0 +1,133 @@
+---
+import Base from '../../layouts/Base.astro';
+import { useTranslations } from '../../i18n';
+const tr = useTranslations('en');
+---
+<Base title={tr.title_privacy} lang="en">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>{tr.region}</span>
+    </div>
+    <div class="corner-right">
+      <a href="/en/" class="back">{tr.back}</a>
+      <nav class="lang-switcher">
+        <a href={tr.alt_privacy}>{tr.lang_other}</a>
+        <span class="lang-sep">·</span>
+        <span class="lang-active">{tr.lang_self}</span>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="content-page">
+      <h1>{tr.privacy_title}</h1>
+      <div class="subtitle">{tr.privacy_last_updated}</div>
+
+      <p>
+        Lacet is committed to protecting the privacy of people who visit
+        <a href="https://lacet.ca">lacet.ca</a> and subscribe to our newsletter.
+        This policy explains what information is collected, how it is used, and
+        what your rights are.
+      </p>
+
+      <h2>1. Data controller</h2>
+      <p>
+        Lacet (Québec, Canada) is the controller of personal data collected through this site.
+        For any question or request, contact us at
+        <a href="mailto:info@lacet.ca">info@lacet.ca</a>.
+      </p>
+
+      <h2>2. Information collected</h2>
+      <p>When you subscribe to our newsletter, we collect:</p>
+      <ul>
+        <li>Your email address;</li>
+        <li>The language chosen (French or English) at sign-up;</li>
+        <li>The date and time of your consent.</li>
+      </ul>
+      <p>
+        No other information is requested or collected about you without your explicit consent.
+      </p>
+
+      <h2>3. Purpose and legal basis</h2>
+      <p>
+        Your email address is used <strong>solely</strong> to send you the Lacet newsletter
+        (announcements about the shop opening, new services, events). Processing is based on
+        your <strong>explicit consent</strong>, given when you check the box at sign-up and
+        confirm your email via the double opt-in link.
+      </p>
+      <p>
+        Your contact details are never sold, rented, or shared for advertising purposes with
+        third parties.
+      </p>
+
+      <h2>4. Processor</h2>
+      <p>
+        Newsletter delivery is operated by <strong>Brevo</strong> (formerly Sendinblue), a
+        French company whose servers are located in the European Union. Brevo acts as a
+        processor under Québec's Law 25 and the GDPR. Their policy is available at
+        <a href="https://www.brevo.com/legal/privacypolicy/" target="_blank" rel="noopener">brevo.com/legal/privacypolicy</a>.
+      </p>
+
+      <h2>5. Transfer outside Québec</h2>
+      <p>
+        Since Brevo is based in France, your data is transferred outside Québec. France is
+        recognized as offering a level of protection equivalent to Québec under the GDPR.
+      </p>
+
+      <h2>6. Retention period</h2>
+      <p>
+        Your email address is kept as long as you remain subscribed to the newsletter. You
+        can unsubscribe at any time via the link at the bottom of each email. Upon
+        unsubscription, your address is removed from our mailing lists within 30 days.
+      </p>
+
+      <h2>7. Your rights</h2>
+      <p>Under Québec's Law 25 and the GDPR, you have the following rights:</p>
+      <ul>
+        <li><strong>Access</strong>: know what data we hold about you;</li>
+        <li><strong>Rectification</strong>: correct inaccurate information;</li>
+        <li><strong>Erasure</strong>: request deletion of your data;</li>
+        <li><strong>Withdrawal of consent</strong>: at any time, without justification;</li>
+        <li><strong>Portability</strong>: receive your data in a readable format;</li>
+        <li><strong>Complaint</strong>: with the Commission d'accès à l'information du Québec
+          (<a href="https://www.cai.gouv.qc.ca" target="_blank" rel="noopener">cai.gouv.qc.ca</a>)
+          or a competent European authority (CNIL in France).</li>
+      </ul>
+      <p>
+        To exercise any of these rights, write to us at
+        <a href="mailto:info@lacet.ca">info@lacet.ca</a>. We will respond within 30 days.
+      </p>
+
+      <h2>8. Cookies and tracking</h2>
+      <p>
+        This site uses <strong>no advertising tracking cookies</strong>, no third-party
+        analytics tool (such as Google Analytics), and places no file on your device for
+        marketing purposes. Only strictly necessary technical files (Cloudflare hosting)
+        may be used.
+      </p>
+
+      <h2>9. Security</h2>
+      <p>
+        Communications between your browser and our servers are encrypted via HTTPS. Access
+        keys to third-party services (such as Brevo) are stored encrypted and are never
+        exposed publicly.
+      </p>
+
+      <h2>10. Changes</h2>
+      <p>
+        This policy may be updated to reflect changes in our practices or the law. The date
+        of the last update is shown at the top of this page. In case of a material change,
+        newsletter subscribers will be notified by email.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <span>{tr.footer_copy}</span>
+    <span class="footer-center"><a href={tr.nl_privacy_href}>{tr.footer_privacy}</a></span>
+    <span>{tr.footer_domain}</span>
+  </footer>
+
+</Base>
