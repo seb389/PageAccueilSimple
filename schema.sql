@@ -14,13 +14,12 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   km_season        TEXT NOT NULL,
   bike_value       TEXT NOT NULL,
 
-  -- Section 2 - Intérêt
+  -- Section 2 - Intérêt et contexte
   interest         INTEGER NOT NULL,
   rented_before    TEXT NOT NULL,
   past_experience  TEXT,
   contexts         TEXT NOT NULL,
-
-  -- Section 3 - Durée
+  bike_type        TEXT NOT NULL,
   duration         TEXT NOT NULL,
 
   -- Section 4 - Prix
@@ -37,7 +36,6 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   val_coaching     TEXT NOT NULL,
   val_equipment    TEXT NOT NULL,
   val_purchase     TEXT NOT NULL,
-  val_storage      TEXT NOT NULL,
   val_routes       TEXT NOT NULL,
 
   top_service      TEXT NOT NULL,

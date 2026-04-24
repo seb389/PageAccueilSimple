@@ -173,6 +173,17 @@ const FR: SurveyContent = {
           ],
         },
         {
+          key: "bike_type", type: "checkbox", required: true,
+          hint: "Cochez tout ce qui s'applique.",
+          label: "Quel type de vélo seriez-vous intéressé à louer ?",
+          options: [
+            { value: "climber",   label: "Vélo léger — Colnago V5Rs, S-Works Aethos, Cervélo R5" },
+            { value: "aero",      label: "Vélo aéro — S-Works Tarmac SL8, Cervélo S5, Colnago Y1Rs" },
+            { value: "endurance", label: "Vélo endurance — S-Works Roubaix, Trek Domane SLR, BMC Roadmachine 01" },
+            { value: "tt",        label: "Vélo TT — Cervélo P5, Trek Speed Concept, Argon 18 E-119 Tri+" },
+          ],
+        },
+        {
           key: "duration", type: "radio", required: true,
           label: "Durée de location qui vous intéresse le plus ?",
           options: [
@@ -252,7 +263,6 @@ const FR: SurveyContent = {
             { key: "val_coaching",     label: "Conseils / coaching par un·e spécialiste" },
             { key: "val_equipment",    label: "Équipement inclus (casque, pédales, GPS, vêtements)" },
             { key: "val_purchase",     label: "Option d'achat avec crédit location" },
-            { key: "val_storage",      label: "Entreposage de votre vélo personnel" },
             { key: "val_routes",       label: "Parcours, GPS, groupes de sortie" },
           ],
         },
@@ -268,7 +278,6 @@ const FR: SurveyContent = {
             { value: "coaching",          label: "Conseils ou coaching" },
             { value: "equipment",         label: "Équipement complémentaire inclus" },
             { value: "purchase_option",   label: "Option d'achat après location" },
-            { value: "storage",           label: "Entreposage du vélo personnel" },
             { value: "routes",            label: "Parcours, itinéraires, groupes de sortie" },
             { value: "other",             label: "Autre" },
           ],
@@ -440,6 +449,17 @@ const EN: SurveyContent = {
           ],
         },
         {
+          key: "bike_type", type: "checkbox", required: true,
+          hint: "Check all that apply.",
+          label: "Which type of bike would you be interested in renting?",
+          options: [
+            { value: "climber",   label: "Lightweight — Colnago V5Rs, S-Works Aethos, Cervélo R5" },
+            { value: "aero",      label: "Aero — S-Works Tarmac SL8, Cervélo S5, Colnago Y1Rs" },
+            { value: "endurance", label: "Endurance — S-Works Roubaix, Trek Domane SLR, BMC Roadmachine 01" },
+            { value: "tt",        label: "TT — Cervélo P5, Trek Speed Concept, Argon 18 E-119 Tri+" },
+          ],
+        },
+        {
           key: "duration", type: "radio", required: true,
           label: "Rental duration that interests you most?",
           options: [
@@ -519,7 +539,6 @@ const EN: SurveyContent = {
             { key: "val_coaching",     label: "Advice / coaching by a specialist" },
             { key: "val_equipment",    label: "Gear included (helmet, pedals, GPS, clothing)" },
             { key: "val_purchase",     label: "Purchase option with rental credit" },
-            { key: "val_storage",      label: "Storage of your personal bike" },
             { key: "val_routes",       label: "Routes, GPS, group rides" },
           ],
         },
@@ -535,7 +554,6 @@ const EN: SurveyContent = {
             { value: "coaching",          label: "Advice or coaching" },
             { value: "equipment",         label: "Complementary gear included" },
             { value: "purchase_option",   label: "Option to buy after rental" },
-            { value: "storage",           label: "Storage of personal bike" },
             { value: "routes",            label: "Routes, tracks, group rides" },
             { value: "other",             label: "Other" },
           ],
