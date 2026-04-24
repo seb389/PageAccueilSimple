@@ -1,0 +1,133 @@
+---
+import Base from '../../layouts/Base.astro';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+// Query stats
+let total = 0;
+let byLang: Record<string, number> = { fr: 0, en: 0 };
+let recent: Array<Record<string, any>> = [];
+
+try {
+  const totalRes = await env.DB
+    .prepare('SELECT COUNT(*) as n FROM survey_responses')
+    .first<{ n: number }>();
+  total = totalRes?.n ?? 0;
+
+  const langRes = await env.DB
+    .prepare('SELECT lang, COUNT(*) as n FROM survey_responses GROUP BY lang')
+    .all<{ lang: string; n: number }>();
+  for (const row of langRes.results ?? []) {
+    byLang[row.lang] = row.n;
+  }
+
+  const recentRes = await env.DB
+    .prepare('SELECT id, created_at, lang, ip_country, age, region, practice, interest, duration FROM survey_responses ORDER BY created_at DESC LIMIT 20')
+    .all();
+  recent = recentRes.results ?? [];
+} catch (err) {
+  console.error('[admin/survey] query failed', err);
+}
+
+const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email') ?? 'admin';
+
+function fmtDate(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso.replace(' ', 'T') + 'Z');
+  return d.toLocaleString('fr-CA', { dateStyle: 'short', timeStyle: 'short' });
+}
+---
+<Base title="LACET · Admin" lang="fr">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>Admin · Lacet</span>
+    </div>
+    <div class="corner-right">
+      <span class="admin-user">{userEmail}</span>
+      <a href="/cdn-cgi/access/logout" class="back">Logout</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="admin-page">
+
+      <section class="admin-section">
+        <h1 class="admin-title">Sondage</h1>
+        <div class="admin-stats">
+          <div class="stat">
+            <div class="stat-value">{total}</div>
+            <div class="stat-label">Réponses totales</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{byLang.fr ?? 0}</div>
+            <div class="stat-label">Français</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{byLang.en ?? 0}</div>
+            <div class="stat-label">English</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-section">
+        <div class="admin-actions">
+          <a href="/api/admin/export-csv" class="admin-button" download>
+            <span>Télécharger CSV complet</span>
+            <span aria-hidden="true">↓</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="admin-section">
+        <h2 class="admin-subtitle">Dernières réponses</h2>
+        {recent.length === 0 ? (
+          <p class="admin-empty">Aucune réponse pour l'instant.</p>
+        ) : (
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Date</th>
+                  <th>Lang</th>
+                  <th>Pays</th>
+                  <th>Âge</th>
+                  <th>Région</th>
+                  <th>Pratique</th>
+                  <th>Intérêt</th>
+                  <th>Durée</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recent.map(r => (
+                  <tr>
+                    <td>{r.id}</td>
+                    <td>{fmtDate(r.created_at)}</td>
+                    <td>{r.lang}</td>
+                    <td>{r.ip_country ?? '—'}</td>
+                    <td>{r.age}</td>
+                    <td>{r.region}</td>
+                    <td>{r.practice}</td>
+                    <td>{r.interest}/10</td>
+                    <td>{r.duration}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <span>© 2026 Lacet</span>
+    <span class="footer-center">Admin</span>
+    <span>lacet.ca</span>
+  </footer>
+
+</Base>
