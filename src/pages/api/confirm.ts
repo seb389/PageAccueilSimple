@@ -10,7 +10,7 @@ export const GET: APIRoute = async ({ url, redirect }) => {
   const raw = await env.PENDING_SIGNUPS.get(token);
   if (!raw) return redirect('/?err=invalid_token', 302);
 
-  let data: { email: string; lang: 'fr' | 'en'; createdAt: number };
+  let data: { email: string; lang: 'fr' | 'en'; source?: string; createdAt: number };
   try {
     data = JSON.parse(raw);
   } catch {
@@ -19,6 +19,7 @@ export const GET: APIRoute = async ({ url, redirect }) => {
   }
 
   const { email, lang } = data;
+  const source = data.source === 'survey' ? 'survey' : 'home';
   const listId = Number(lang === 'fr' ? env.BREVO_LIST_ID_FR : env.BREVO_LIST_ID_EN);
 
   const res = await fetch('https://api.brevo.com/v3/contacts', {
@@ -31,7 +32,10 @@ export const GET: APIRoute = async ({ url, redirect }) => {
     body: JSON.stringify({
       email,
       listIds: [listId],
-      attributes: { OPT_IN_LANG: lang.toUpperCase() },
+      attributes: {
+        OPT_IN_LANG: lang.toUpperCase(),
+        SOURCE: source.toUpperCase(),
+      },
       updateEnabled: true,
     }),
   });

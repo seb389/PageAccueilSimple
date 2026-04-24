@@ -1,8 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
+import SurveyForm from '../../components/SurveyForm.astro';
 import { useTranslations } from '../../i18n';
 const tr = useTranslations('en');
-const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfegqGPewOsPUPblSO8QJVq7rGGvE5GtnKkwOLm7_gR_6Ke0w/viewform';
 ---
 <Base title={tr.title_sondage} lang="en">
 
@@ -22,28 +22,12 @@ const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfegqGPewOsPUPblSO8QJ
   </header>
 
   <main>
-    <div class="page-title">{tr.sondage_heading}</div>
-    <div class="page-sub">
-      {tr.tagline_left}<span style="display:inline-block;width:32px;height:1px;background:var(--cuivre);margin:0 10px;vertical-align:middle;"></span>{tr.tagline_right}
-    </div>
-    <div class="form-wrapper">
-      <iframe
-        src={`${FORM_URL}?embedded=true`}
-        title={tr.sondage_heading}
-        loading="lazy"
-      >
-        Loading…
-      </iframe>
-    </div>
-    <div class="form-link">
-      <a href={FORM_URL} target="_blank" rel="noopener noreferrer">
-        {tr.form_link}
-      </a>
-    </div>
+    <SurveyForm lang="en" />
   </main>
 
   <footer>
     <span>{tr.footer_copy}</span>
+    <span class="footer-center"><a href={tr.nl_privacy_href}>{tr.footer_privacy}</a></span>
     <span>{tr.footer_domain}</span>
   </footer>
 

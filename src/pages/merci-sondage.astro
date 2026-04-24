@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import { useTranslations } from '../i18n';
+const tr = useTranslations('fr');
+---
+<Base title={tr.title_thanks} lang="fr">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>{tr.region}</span>
+    </div>
+    <nav class="lang-switcher">
+      <span class="lang-active">{tr.lang_self}</span>
+      <span class="lang-sep">·</span>
+      <a href="/en/thanks-survey">{tr.lang_other}</a>
+    </nav>
+  </header>
+
+  <main class="centered">
+    <div class="content-page">
+      <div class="big-center">
+        <h1>{tr.thanks_survey_title}</h1>
+        <p>{tr.thanks_survey_body}</p>
+        <a href="/" class="home-link">{tr.thanks_survey_back}</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span>{tr.footer_copy}</span>
+    <span class="footer-center"><a href={tr.nl_privacy_href}>{tr.footer_privacy}</a></span>
+    <span>{tr.footer_domain}</span>
+  </footer>
+
+</Base>

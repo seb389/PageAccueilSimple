@@ -93,7 +93,7 @@ const tr = useTranslations(lang);
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email, consent: true, lang }),
+        body: JSON.stringify({ email, consent: true, lang, source: 'home' }),
       });
       const data = await res.json().catch(() => ({ ok: false, error: 'service_error' }));
 

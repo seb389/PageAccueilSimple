@@ -7,5 +7,12 @@
       "binding": "PENDING_SIGNUPS",
       "id": "11af6dc765cb4b6b91198d53e67d132f"
     }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lacet-survey",
+      "database_id": "aa029259-5226-4c3f-9231-87306dd7aa37"
+    }
   ]
 }

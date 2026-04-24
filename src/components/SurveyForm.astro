@@ -1,0 +1,300 @@
+---
+import type { Lang } from '../i18n';
+import { survey, type Question } from '../survey';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const content = survey[lang];
+
+let globalIndex = 0;
+const numberedSections = content.sections.map(section => ({
+  ...section,
+  questions: section.questions.map(q => ({ ...q, number: ++globalIndex })),
+}));
+---
+
+<section class="survey" data-lang={lang}>
+
+  <header class="survey-intro">
+    <h1 class="survey-title">{content.intro.heading}</h1>
+    {content.intro.paragraphs.map(p => <p>{p}</p>)}
+    <p class="survey-signature">{content.intro.signature}</p>
+    <p class="survey-time">
+      <span class="dot"></span>
+      <span>{content.intro.timeEstimate}</span>
+    </p>
+  </header>
+
+  <form class="survey-form" novalidate>
+    <p class="survey-required-note">{content.requiredNote}</p>
+
+    {numberedSections.map(section => (
+      <fieldset class="survey-section" data-section={section.id}>
+        <legend>
+          <span class="survey-section-title">{section.title}</span>
+          {section.intro && <span class="survey-section-intro">{section.intro}</span>}
+        </legend>
+
+        {section.questions.map((q: Question & { number: number }) => (
+          <div class="q" data-qkey={q.key} data-qtype={q.type}>
+            <div class="q-label">
+              <span class="q-num">Q{q.number}.</span>
+              <span>
+                {q.label}
+                {q.required && <span class="q-required" aria-label="obligatoire">*</span>}
+              </span>
+            </div>
+            {'hint' in q && q.hint && <p class="q-hint">{q.hint}</p>}
+
+            {q.type === 'radio' && (
+              <div class="q-options">
+                {q.options.map(opt => (
+                  <label class="opt">
+                    <input type="radio" name={q.key} value={opt.value} required={q.required} />
+                    <span class="opt-custom"></span>
+                    <span class="opt-label">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {q.type === 'checkbox' && (
+              <div class="q-options" data-required={q.required ? 'true' : 'false'}>
+                {q.options.map(opt => (
+                  <label class="opt">
+                    <input type="checkbox" name={q.key} value={opt.value} />
+                    <span class="opt-custom opt-check"></span>
+                    <span class="opt-label">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {q.type === 'scale' && (
+              <div class="q-scale">
+                <div class="scale-track">
+                  {Array.from({ length: q.max - q.min + 1 }, (_, i) => q.min + i).map(n => (
+                    <label class="scale-cell">
+                      <input type="radio" name={q.key} value={n} required={q.required} />
+                      <span class="scale-dot">{n}</span>
+                    </label>
+                  ))}
+                </div>
+                <div class="scale-labels">
+                  <span>{q.minLabel}</span>
+                  <span>{q.maxLabel}</span>
+                </div>
+              </div>
+            )}
+
+            {q.type === 'textarea' && (
+              <textarea
+                name={q.key}
+                rows="5"
+                placeholder={q.placeholder ?? ''}
+                required={q.required}
+              ></textarea>
+            )}
+
+            {q.type === 'matrix' && (
+              <div class="q-matrix" data-keys={q.rows.map(r => r.key).join(',')}>
+                <div class="matrix-grid" style={`--cols:${q.columns.length}`}>
+                  <div class="matrix-header"></div>
+                  {q.columns.map(col => (
+                    <div class="matrix-col-label">{col.label}</div>
+                  ))}
+                  {q.rows.map(row => (
+                    <>
+                      <div class="matrix-row-label">{row.label}</div>
+                      {q.columns.map(col => (
+                        <label class="matrix-cell">
+                          <input type="radio" name={row.key} value={col.value} required={q.required} />
+                          <span class="matrix-dot" aria-label={col.label}></span>
+                        </label>
+                      ))}
+                    </>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </fieldset>
+    ))}
+
+    <section class="survey-newsletter">
+      <div class="survey-newsletter-head">
+        <span class="survey-newsletter-title">{content.newsletterOptIn.title}</span>
+        <p class="survey-newsletter-hint">{content.newsletterOptIn.hint}</p>
+      </div>
+
+      <label class="opt survey-nl-toggle">
+        <input type="checkbox" name="newsletter_optin" />
+        <span class="opt-custom opt-check"></span>
+        <span class="opt-label">{content.newsletterOptIn.enableLabel}</span>
+      </label>
+
+      <div class="survey-nl-fields" hidden>
+        <div class="nl-input-group">
+          <input
+            type="email"
+            name="newsletter_email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder={content.newsletterOptIn.emailPlaceholder}
+            aria-label={content.newsletterOptIn.emailPlaceholder}
+          />
+        </div>
+        <label class="nl-consent survey-nl-consent">
+          <input type="checkbox" name="newsletter_consent" />
+          <span>
+            {content.newsletterOptIn.consentBefore}{' '}
+            <a href={content.newsletterOptIn.privacyHref}>{content.newsletterOptIn.consentLink}</a>{content.newsletterOptIn.consentAfter}
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <p class="survey-error" role="alert" hidden></p>
+
+    <div class="survey-submit-row">
+      <button type="submit" class="survey-submit">
+        <span class="submit-label">{content.submit}</span>
+      </button>
+    </div>
+  </form>
+
+</section>
+
+<script is:inline define:vars={{
+  messages: {
+    required:         content.errors.required,
+    network:          content.errors.network,
+    default:          content.errors.default,
+    invalid_email:    content.errors.invalid_email,
+    consent_required: content.errors.consent_required,
+  },
+  submitLabel: content.submit,
+  submittingLabel: content.submitting,
+}}>
+(function () {
+  const form = document.querySelector('.survey-form');
+  if (!form) return;
+  const errorEl = form.querySelector('.survey-error');
+  const button  = form.querySelector('.survey-submit');
+  const btnLabel = button.querySelector('.submit-label');
+  const lang    = document.querySelector('.survey').dataset.lang || 'fr';
+
+  const nlToggle = form.querySelector('input[name="newsletter_optin"]');
+  const nlFields = form.querySelector('.survey-nl-fields');
+  const nlEmail  = form.querySelector('input[name="newsletter_email"]');
+  const nlConsent= form.querySelector('input[name="newsletter_consent"]');
+
+  nlToggle.addEventListener('change', () => {
+    nlFields.hidden = !nlToggle.checked;
+    if (!nlToggle.checked) {
+      nlEmail.value = '';
+      nlConsent.checked = false;
+    } else {
+      setTimeout(() => nlEmail.focus(), 50);
+    }
+  });
+
+  function showError(msg, scrollTarget) {
+    errorEl.textContent = msg;
+    errorEl.hidden = false;
+    (scrollTarget || errorEl).scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function clearError() { errorEl.hidden = true; errorEl.textContent = ''; }
+
+  function collect() {
+    const data = { lang };
+    const formData = new FormData(form);
+
+    form.querySelectorAll('.q').forEach(qEl => {
+      const key = qEl.dataset.qkey;
+      const type = qEl.dataset.qtype;
+      const required = qEl.querySelector('.q-required') !== null;
+
+      if (type === 'radio' || type === 'scale') {
+        const v = formData.get(key);
+        if (v != null) data[key] = type === 'scale' ? Number(v) : v;
+        else if (required) throw new Error('missing:' + key);
+      } else if (type === 'checkbox') {
+        const vals = formData.getAll(key);
+        if (required && vals.length === 0) throw new Error('missing:' + key);
+        data[key] = vals;
+      } else if (type === 'textarea') {
+        const v = formData.get(key);
+        data[key] = (v || '').trim();
+      } else if (type === 'matrix') {
+        const keys = qEl.querySelector('.q-matrix').dataset.keys.split(',');
+        for (const rowKey of keys) {
+          const v = formData.get(rowKey);
+          if (v != null) data[rowKey] = v;
+          else if (required) throw new Error('missing:' + rowKey);
+        }
+      }
+    });
+
+    if (nlToggle.checked) {
+      const email = (nlEmail.value || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('invalid_email');
+      if (!nlConsent.checked) throw new Error('consent_required');
+      data.newsletter_optin = true;
+      data.newsletter_email = email;
+      data.newsletter_consent = true;
+    }
+
+    return data;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    let payload;
+    try {
+      payload = collect();
+    } catch (err) {
+      const msg = String(err.message || '');
+      if (msg.startsWith('missing:')) {
+        const missingKey = msg.replace(/^missing:/, '');
+        const target = form.querySelector(`[name="${missingKey}"]`);
+        showError(messages.required, target?.closest('.q') || null);
+      } else if (msg === 'invalid_email') {
+        showError(messages.invalid_email, nlEmail.closest('.survey-newsletter'));
+      } else if (msg === 'consent_required') {
+        showError(messages.consent_required, nlConsent.closest('.survey-newsletter'));
+      } else {
+        showError(messages.default);
+      }
+      return;
+    }
+
+    button.disabled = true;
+    btnLabel.textContent = submittingLabel;
+
+    try {
+      const res = await fetch('/api/survey', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({ ok: false }));
+      if (data.ok) {
+        const redirect = lang === 'fr' ? '/merci-sondage' : '/en/thanks-survey';
+        window.location.href = redirect;
+      } else {
+        showError(messages.default);
+        button.disabled = false;
+        btnLabel.textContent = submitLabel;
+      }
+    } catch {
+      showError(messages.network);
+      button.disabled = false;
+      btnLabel.textContent = submitLabel;
+    }
+  });
+})();
+</script>

@@ -48,6 +48,11 @@ export const ui = {
     thanks_body:        'Votre inscription à l\'infolettre est confirmée. Vous recevrez des nouvelles dès l\'ouverture de l\'atelier.',
     thanks_back:        '← Retour à l\'accueil',
 
+    // Page merci sondage
+    thanks_survey_title: 'Merci !',
+    thanks_survey_body:  'Votre contribution nous aide à construire un service pensé pour les cyclistes d\'ici. Nous publierons les grandes tendances du sondage dans les prochains mois.',
+    thanks_survey_back:  '← Retour à l\'accueil',
+
     // Politique de confidentialité
     privacy_title:      'Politique de confidentialité',
     privacy_last_updated: 'Dernière mise à jour : avril 2026',
@@ -98,6 +103,11 @@ export const ui = {
     thanks_title:       'Thank you!',
     thanks_body:        'Your subscription to the newsletter is confirmed. You will hear from us as soon as the shop opens.',
     thanks_back:        '← Back to home',
+
+    // Survey thanks page
+    thanks_survey_title: 'Thank you!',
+    thanks_survey_body:  'Your input helps us build a service made for cyclists here. We will publish the main findings of the survey in the coming months.',
+    thanks_survey_back:  '← Back to home',
 
     // Privacy policy
     privacy_title:      'Privacy Policy',

@@ -10,6 +10,7 @@ declare global {
     BREVO_TEMPLATE_ID_EN: string;
     SITE_URL: string;
     PENDING_SIGNUPS: KVNamespace;
+    DB: D1Database;
   }
 }
 
