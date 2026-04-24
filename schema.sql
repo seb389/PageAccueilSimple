@@ -39,10 +39,8 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   val_purchase     TEXT NOT NULL,
   val_storage      TEXT NOT NULL,
   val_routes       TEXT NOT NULL,
-  val_breakdown    TEXT NOT NULL,
 
   top_service      TEXT NOT NULL,
-  delivery_price   TEXT NOT NULL,
 
   -- Section 6 - Freins & commentaires
   main_concern     TEXT NOT NULL,

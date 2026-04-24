@@ -32,7 +32,7 @@ const numberedSections = content.sections.map(section => ({
       <fieldset class="survey-section" data-section={section.id}>
         <legend>
           <span class="survey-section-title">{section.title}</span>
-          {section.intro && <span class="survey-section-intro">{section.intro}</span>}
+          {section.intro && <span class="survey-section-intro" set:html={section.intro} />}
         </legend>
 
         {section.questions.map((q: Question & { number: number }) => (

@@ -25,6 +25,12 @@ export const ui = {
     alt_thanks:         '/en/thanks',
     alt_privacy:        '/en/privacy',
 
+    // Survey CTA (home page)
+    survey_cta_label:   'Sondage',
+    survey_cta_prompt:  'Aidez-nous à bâtir un service qui vous ressemble',
+    survey_cta_button:  'Participer au sondage',
+    survey_cta_href:    '/sondage',
+
     // Newsletter
     nl_label:           'Infolettre',
     nl_prompt:          'Soyez avisé·e de notre ouverture',
@@ -80,6 +86,12 @@ export const ui = {
     alt_sondage:        '/sondage',
     alt_thanks:         '/merci',
     alt_privacy:        '/confidentialite',
+
+    // Survey CTA (home page)
+    survey_cta_label:   'Survey',
+    survey_cta_prompt:  'Help us build a service that fits you',
+    survey_cta_button:  'Take the survey',
+    survey_cta_href:    '/en/sondage',
 
     // Newsletter
     nl_label:           'Newsletter',

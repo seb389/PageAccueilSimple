@@ -140,6 +140,21 @@ const { title, lang } = Astro.props;
     justify-content: center;
     text-align: center;
   }
+  main.spread {
+    justify-content: space-between;
+    text-align: center;
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+  main.spread .cta,
+  main.spread .contact {
+    margin-top: 0;
+  }
+  .home-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
   /* ── Page d'accueil ── */
   .wordmark {
@@ -279,6 +294,57 @@ const { title, lang } = Astro.props;
   .form-link a:hover {
     color: var(--cuivre);
     border-color: var(--cuivre);
+  }
+
+  /* ── Survey CTA (home) ── */
+  .cta {
+    margin-top: 56px;
+    text-align: center;
+    animation: fadeUp 1.2s 1.4s ease-out both;
+  }
+  .cta .label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--fumee);
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+  .cta-prompt {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--craie);
+    margin: 0 auto 22px;
+    max-width: 360px;
+  }
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 28px;
+    border: 1px solid var(--line);
+    color: var(--craie);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: border-color 0.25s ease, color 0.25s ease;
+  }
+  .cta-button:hover,
+  .cta-button:focus-visible {
+    border-color: var(--cuivre);
+    color: var(--cuivre);
+    outline: none;
+  }
+  .cta-arrow {
+    font-size: 14px;
+    transition: transform 0.25s ease;
+  }
+  .cta-button:hover .cta-arrow,
+  .cta-button:focus-visible .cta-arrow {
+    transform: translateX(3px);
   }
 
   /* ── Newsletter ── */
@@ -614,22 +680,33 @@ const { title, lang } = Astro.props;
     color: var(--fumee);
     letter-spacing: 0.01em;
   }
+  .survey-section-intro strong {
+    color: rgba(244, 241, 236, 0.9);
+    font-weight: 500;
+  }
 
   /* Questions */
   .q {
-    margin-bottom: 36px;
+    margin-bottom: 44px;
+    padding-left: 16px;
+    border-left: 2px solid var(--line);
+    transition: border-color 0.25s ease;
+  }
+  .q:focus-within {
+    border-left-color: var(--cuivre);
   }
   .q-label {
     display: flex;
-    gap: 12px;
-    font-size: 14px;
-    line-height: 1.5;
+    gap: 14px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.45;
     color: var(--craie);
-    margin-bottom: 14px;
+    margin-bottom: 20px;
   }
   .q-num {
-    color: var(--fumee);
-    font-weight: 600;
+    color: var(--cuivre);
+    font-weight: 700;
     letter-spacing: 0.04em;
     flex-shrink: 0;
     min-width: 36px;
@@ -637,18 +714,20 @@ const { title, lang } = Astro.props;
   .q-required {
     color: var(--cuivre);
     margin-left: 4px;
+    font-weight: 400;
   }
   .q-hint {
-    margin: -6px 0 14px 48px;
+    margin: -10px 0 16px 50px;
     font-size: 12px;
     color: var(--fumee);
     letter-spacing: 0.01em;
+    font-style: italic;
   }
   .q-options {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-left: 48px;
+    gap: 4px;
+    margin-left: 50px;
   }
 
   /* Custom radio & checkbox */
@@ -656,15 +735,17 @@ const { title, lang } = Astro.props;
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 8px 0;
+    padding: 6px 0;
     cursor: pointer;
     font-size: 13px;
+    font-weight: 400;
     line-height: 1.5;
-    color: var(--craie);
+    color: rgba(244, 241, 236, 0.78);
     letter-spacing: 0.01em;
     transition: color 0.2s ease;
   }
-  .opt:hover { color: var(--cuivre); }
+  .opt:hover { color: var(--craie); }
+  .opt:has(input:checked) { color: var(--craie); }
   .opt input {
     position: absolute;
     opacity: 0;
@@ -705,7 +786,7 @@ const { title, lang } = Astro.props;
 
   /* Scale (Q6) */
   .q-scale {
-    margin-left: 48px;
+    margin-left: 50px;
   }
   .scale-track {
     display: grid;
@@ -752,8 +833,8 @@ const { title, lang } = Astro.props;
 
   /* Textarea */
   .q textarea {
-    margin-left: 48px;
-    width: calc(100% - 48px);
+    margin-left: 50px;
+    width: calc(100% - 50px);
     background: transparent;
     border: 1px solid var(--line);
     border-radius: 2px;
@@ -776,13 +857,12 @@ const { title, lang } = Astro.props;
 
   /* Matrix (Q14) */
   .q-matrix {
-    margin-left: 48px;
+    margin-left: 50px;
     overflow-x: auto;
   }
   .matrix-grid {
     display: grid;
     grid-template-columns: minmax(220px, 2fr) repeat(var(--cols), minmax(90px, 1fr));
-    align-items: center;
     min-width: 580px;
   }
   .matrix-header {
@@ -798,10 +878,12 @@ const { title, lang } = Astro.props;
     border-bottom: 1px solid var(--line);
   }
   .matrix-row-label {
+    display: flex;
+    align-items: center;
     padding: 14px 12px 14px 0;
     font-size: 13px;
     line-height: 1.5;
-    color: var(--craie);
+    color: rgba(244, 241, 236, 0.82);
     border-bottom: 1px solid var(--line);
   }
   .matrix-cell {
@@ -916,9 +998,10 @@ const { title, lang } = Astro.props;
     .form-wrapper iframe { min-height: calc(100vh - 200px); }
 
     /* Survey mobile */
-    .q-label { gap: 8px; font-size: 13px; }
-    .q-num { min-width: 28px; font-size: 12px; }
-    .q-hint { margin-left: 36px; }
+    .q { padding-left: 12px; }
+    .q-label { gap: 10px; font-size: 15px; }
+    .q-num { min-width: 28px; font-size: 13px; }
+    .q-hint { margin-left: 38px; }
     .q-options,
     .q-scale,
     .q-matrix,

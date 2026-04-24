@@ -1,6 +1,5 @@
 ---
 import Base from '../layouts/Base.astro';
-import NewsletterForm from '../components/NewsletterForm.astro';
 import { useTranslations } from '../i18n';
 
 const tr = useTranslations('fr');
@@ -19,14 +18,23 @@ const tr = useTranslations('fr');
     </nav>
   </header>
 
-  <main class="centered">
-    <h1 class="wordmark">LACET</h1>
-    <div class="surligne">
-      {tr.tagline_left}<span class="rule"></span>{tr.tagline_right}
+  <main class="spread">
+    <div class="home-top">
+      <h1 class="wordmark">LACET</h1>
+      <div class="surligne">
+        {tr.tagline_left}<span class="rule"></span>{tr.tagline_right}
+      </div>
+      <div class="status">{tr.status}</div>
     </div>
-    <div class="status">{tr.status}</div>
 
-    <NewsletterForm lang="fr" />
+    <div class="cta">
+      <span class="label">{tr.survey_cta_label}</span>
+      <p class="cta-prompt">{tr.survey_cta_prompt}</p>
+      <a href={tr.survey_cta_href} class="cta-button">
+        <span>{tr.survey_cta_button}</span>
+        <span class="cta-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
 
     <div class="contact">
       <span class="label">{tr.contact_label}</span>
