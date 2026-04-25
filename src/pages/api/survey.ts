@@ -125,6 +125,22 @@ export const POST: APIRoute = async ({ request }) => {
     }
   }
 
+  // Optional: contest entry (best-effort, kept in a separate table — no link to survey response)
+  if (body.contest_optin === true && body.contest_rules === true) {
+    const name = typeof body.contest_name === 'string' ? body.contest_name.trim() : '';
+    const cEmail = typeof body.contest_email === 'string' ? body.contest_email.trim().toLowerCase() : '';
+    if (name && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cEmail)) {
+      try {
+        await env.DB
+          .prepare('INSERT INTO contest_entries (lang, name, email, accepted_rules, ip_country) VALUES (?, ?, ?, 1, ?)')
+          .bind(lang, name, cEmail, ipCountry)
+          .run();
+      } catch (e) {
+        console.error('[survey] contest insert failed', e);
+      }
+    }
+  }
+
   return json({ ok: true }, 200);
 };
 

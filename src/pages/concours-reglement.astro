@@ -1,0 +1,102 @@
+---
+import Base from '../layouts/Base.astro';
+import { useTranslations } from '../i18n';
+const tr = useTranslations('fr');
+---
+<Base title="LACET · Règlement du concours" lang="fr">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>{tr.region}</span>
+    </div>
+    <div class="corner-right">
+      <a href="/sondage" class="back">← Sondage</a>
+      <nav class="lang-switcher">
+        <span class="lang-active">FR</span>
+        <span class="lang-sep">·</span>
+        <a href="/en/contest-rules">EN</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="content-page">
+      <h1>Règlement du concours</h1>
+      <div class="subtitle">Dernière mise à jour : avril 2026</div>
+
+      <p>
+        Le présent règlement encadre la participation au tirage organisé par Lacet dans le cadre du
+        sondage de validation de service. En participant, vous acceptez les conditions ci-dessous.
+      </p>
+
+      <h2>1. Organisateur</h2>
+      <p>
+        Le concours est organisé par Lacet (Québec, Canada). Pour toute question, écrivez à
+        <a href="mailto:info@lacet.ca">info@lacet.ca</a>.
+      </p>
+
+      <h2>2. Admissibilité</h2>
+      <p>
+        Le concours est ouvert à toute personne âgée de 18 ans ou plus, résidant au Canada, sauf
+        les employé·e·s de Lacet et les membres de leur famille immédiate. Les personnes au
+        Québec doivent respecter les exigences applicables aux concours publicitaires.
+      </p>
+
+      <h2>3. Comment participer</h2>
+      <p>
+        Pour être inscrit·e au tirage, complétez le sondage Lacet et cochez la case
+        <strong>« Je participe au tirage »</strong> en fournissant votre nom et votre adresse
+        courriel. La participation est gratuite et sans obligation d'achat. Une seule
+        participation par adresse courriel.
+      </p>
+
+      <h2>4. Prix</h2>
+      <p>
+        <em>(À compléter — décrivez le prix, sa valeur approximative, les conditions
+        particulières d'utilisation s'il y en a.)</em>
+      </p>
+
+      <h2>5. Date du tirage</h2>
+      <p>
+        Le tirage aura lieu <em>(à compléter — date de fin du concours)</em>. La personne
+        gagnante sera contactée par courriel dans les sept (7) jours suivant le tirage et
+        devra répondre dans un délai de quatorze (14) jours, sans quoi un nouveau tirage
+        pourra être effectué.
+      </p>
+
+      <h2>6. Utilisation des informations personnelles</h2>
+      <p>
+        Le nom et le courriel fournis dans le cadre du concours sont utilisés
+        <strong>uniquement</strong> pour gérer le tirage et contacter la personne gagnante.
+        Ces informations sont conservées séparément de vos réponses au sondage, qui demeurent
+        anonymes. Elles seront supprimées au plus tard 60 jours après l'annonce de la personne
+        gagnante.
+      </p>
+      <p>
+        Pour plus de détails sur le traitement de vos données, consultez notre
+        <a href="/confidentialite">politique de confidentialité</a>.
+      </p>
+
+      <h2>7. Modifications et annulation</h2>
+      <p>
+        Lacet se réserve le droit de modifier le présent règlement ou d'annuler le concours
+        en cas de circonstances exceptionnelles. Les participant·e·s seront informé·e·s par
+        un avis sur lacet.ca.
+      </p>
+
+      <h2>8. Contact</h2>
+      <p>
+        Toute question relative au concours peut être adressée à
+        <a href="mailto:info@lacet.ca">info@lacet.ca</a>.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <span>{tr.footer_copy}</span>
+    <span class="footer-center"><a href={tr.nl_privacy_href}>{tr.footer_privacy}</a></span>
+    <span>{tr.footer_domain}</span>
+  </footer>
+
+</Base>

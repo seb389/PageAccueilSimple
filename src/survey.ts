@@ -33,6 +33,17 @@ export type SurveyContent = {
     consentAfter: string;
     privacyHref: string;
   };
+  contestOptIn: {
+    title: string;
+    hint: string;
+    enableLabel: string;
+    namePlaceholder: string;
+    emailPlaceholder: string;
+    rulesBefore: string;
+    rulesLink: string;
+    rulesAfter: string;
+    rulesHref: string;
+  };
 };
 
 const FR: SurveyContent = {
@@ -64,6 +75,17 @@ const FR: SurveyContent = {
     consentLink: "politique de confidentialité",
     consentAfter: ".",
     privacyHref: "/confidentialite",
+  },
+  contestOptIn: {
+    title: "Concours (optionnel)",
+    hint: "Pour tenter votre chance de gagner un prix exclusif, laissez-nous votre nom et votre courriel. Cette information est utilisée uniquement pour le tirage et conservée séparément de vos réponses au sondage.",
+    enableLabel: "Je participe au tirage",
+    namePlaceholder: "Votre nom",
+    emailPlaceholder: "votre@courriel.ca",
+    rulesBefore: "J'ai lu et j'accepte le",
+    rulesLink: "règlement du concours",
+    rulesAfter: ".",
+    rulesHref: "/concours-reglement",
   },
   sections: [
     {
@@ -340,6 +362,17 @@ const EN: SurveyContent = {
     consentLink: "privacy policy",
     consentAfter: ".",
     privacyHref: "/en/privacy",
+  },
+  contestOptIn: {
+    title: "Contest (optional)",
+    hint: "Enter the draw for an exclusive prize by leaving us your name and email. This information is used only for the draw and kept separate from your survey answers.",
+    enableLabel: "I'd like to enter the draw",
+    namePlaceholder: "Your name",
+    emailPlaceholder: "your@email.com",
+    rulesBefore: "I have read and accept the",
+    rulesLink: "contest rules",
+    rulesAfter: ".",
+    rulesHref: "/en/contest-rules",
   },
   sections: [
     {

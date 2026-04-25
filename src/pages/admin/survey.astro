@@ -83,6 +83,55 @@ function orderByOptions(qKey: string, dist: { value: string; n: number }[]): { v
   return dist;
 }
 
+// Cross-analyses
+function avgInterestBy(rows: SurveyResponse[], field: keyof SurveyResponse): { value: string; avg: number; n: number }[] {
+  const groups = new Map<string, number[]>();
+  for (const r of rows) {
+    const k = String(r[field] ?? '');
+    if (!k) continue;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k)!.push(r.interest);
+  }
+  return Array.from(groups.entries()).map(([value, scores]) => ({
+    value,
+    avg: scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0,
+    n: scores.length,
+  }));
+}
+function pctMatchingBy(
+  rows: SurveyResponse[],
+  field: keyof SurveyResponse,
+  pred: (r: SurveyResponse) => boolean,
+): { value: string; matches: number; n: number; pct: number }[] {
+  const groups = new Map<string, { matches: number; total: number }>();
+  for (const r of rows) {
+    const k = String(r[field] ?? '');
+    if (!k) continue;
+    if (!groups.has(k)) groups.set(k, { matches: 0, total: 0 });
+    const g = groups.get(k)!;
+    g.total++;
+    if (pred(r)) g.matches++;
+  }
+  return Array.from(groups.entries()).map(([value, g]) => ({
+    value,
+    matches: g.matches,
+    n: g.total,
+    pct: g.total > 0 ? (g.matches / g.total) * 100 : 0,
+  }));
+}
+function orderCross<T extends { value: string }>(qKey: string, items: T[]): T[] {
+  for (const section of content.sections) {
+    for (const q of section.questions) {
+      if (q.key === qKey && (q.type === 'radio' || q.type === 'checkbox')) {
+        const order = q.options.map(o => o.value);
+        const map = new Map(items.map(i => [i.value, i]));
+        return order.map(v => map.get(v)).filter((x): x is T => x !== undefined);
+      }
+    }
+  }
+  return items;
+}
+
 // ─── Constants ───────────────────────────────────────────────────────
 const PRICE_TARGETS: { [k: string]: string } = {
   price_week: '500_700',
@@ -162,6 +211,18 @@ const servicesEssential = SERVICES_ROWS
   .map(row => ({ key: row, n: allResponses.filter(r => r[row] === 'essential').length }))
   .sort((a, b) => b.n - a.n);
 
+// Cross-analyses
+const crossInterestByPractice = orderCross('practice', avgInterestBy(allResponses, 'practice'));
+const crossInterestByBikeValue = orderCross('bike_value', avgInterestBy(allResponses, 'bike_value'));
+const crossHighInterestByRegion = orderCross(
+  'region',
+  pctMatchingBy(allResponses, 'region', r => r.interest >= 7),
+);
+const crossPriceTargetByPractice = orderCross(
+  'practice',
+  pctMatchingBy(allResponses, 'practice', r => r.price_week === '500_700' || r.price_week === '700_1000' || r.price_week === 'over_1000'),
+);
+
 // Pagination
 const PAGE_SIZE = 20;
 const totalPages = Math.max(1, Math.ceil(allResponses.length / PAGE_SIZE));
@@ -219,6 +280,11 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
 
   <main>
     <div class="admin-page">
+
+      <nav class="admin-nav">
+        <a href="/admin/survey" class="is-active">Sondage</a>
+        <a href="/admin/contest">Concours</a>
+      </nav>
 
       <div class="mode-toggle">
         <a href="/admin/survey" class={isTest ? '' : 'is-active'}>Données réelles</a>
@@ -414,6 +480,64 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
                 <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {total > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Analyses croisées</h2>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">Score d'intérêt moyen × pratique du vélo</h3>
+            <div class="dist">
+              {crossInterestByPractice.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{labelFor('practice', item.value)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${item.avg * 10}%`}></div></div>
+                  <span class="dist-count">{item.avg.toFixed(1)}/10 <span class="dist-pct">(n={item.n})</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">Score d'intérêt moyen × valeur du vélo actuel</h3>
+            <div class="dist">
+              {crossInterestByBikeValue.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{labelFor('bike_value', item.value)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${item.avg * 10}%`}></div></div>
+                  <span class="dist-count">{item.avg.toFixed(1)}/10 <span class="dist-pct">(n={item.n})</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">% à fort intérêt (≥ 7) × région</h3>
+            <div class="dist">
+              {crossHighInterestByRegion.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{labelFor('region', item.value)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${item.pct}%`}></div></div>
+                  <span class="dist-count">{Math.round(item.pct)}% <span class="dist-pct">({item.matches}/{item.n})</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">% acceptant ≥ $500/semaine × pratique du vélo</h3>
+            <div class="dist">
+              {crossPriceTargetByPractice.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{labelFor('practice', item.value)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${item.pct}%`}></div></div>
+                  <span class="dist-count">{Math.round(item.pct)}% <span class="dist-pct">({item.matches}/{item.n})</span></span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}

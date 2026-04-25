@@ -835,6 +835,52 @@ const { title, lang, theme = 'dark' } = Astro.props;
     .pagination { justify-content: center; }
   }
 
+  /* Admin nav (sondage / concours) */
+  .admin-nav {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .admin-nav a {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fumee);
+    text-decoration: none;
+    padding-bottom: 8px;
+    margin-bottom: -13px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .admin-nav a:hover { color: var(--craie); }
+  .admin-nav a.is-active {
+    color: var(--craie);
+    border-bottom-color: var(--cuivre);
+  }
+
+  /* Inline form (used for danger buttons) */
+  .inline-form {
+    display: inline-block;
+    margin: 0;
+  }
+  .admin-button.is-danger {
+    border-color: rgba(196, 80, 80, 0.5);
+    color: #c45050;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .admin-button.is-danger:hover,
+  .admin-button.is-danger:focus-visible {
+    border-color: #c45050;
+    color: #fff;
+    background: #c45050;
+    outline: none;
+  }
+
   /* Mode toggle (admin) */
   .mode-toggle {
     display: inline-flex;
@@ -1357,6 +1403,36 @@ const { title, lang, theme = 'dark' } = Astro.props;
     margin-top: 14px;
   }
 
+  /* Contest section */
+  .survey-contest-fields {
+    margin-top: 16px;
+    padding-left: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 420px;
+  }
+  .contest-row input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    color: var(--craie);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 0;
+    letter-spacing: 0.02em;
+    outline: none;
+    transition: border-color 0.25s ease;
+  }
+  .contest-row input:focus {
+    border-bottom-color: var(--craie);
+  }
+  .contest-row input::placeholder {
+    color: var(--fumee);
+    opacity: 0.55;
+  }
+
   /* Survey submit */
   .survey-error {
     margin: 0 0 16px;
@@ -1414,6 +1490,7 @@ const { title, lang, theme = 'dark' } = Astro.props;
     .scale-dot { height: 38px; font-size: 11px; }
     .survey-newsletter { padding: 22px 18px; }
     .survey-nl-fields { padding-left: 0; }
+    .survey-contest-fields { padding-left: 0; }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -122,6 +122,48 @@ const numberedSections = content.sections.map(section => ({
       </fieldset>
     ))}
 
+    <section class="survey-newsletter survey-contest">
+      <div class="survey-newsletter-head">
+        <span class="survey-newsletter-title">{content.contestOptIn.title}</span>
+        <p class="survey-newsletter-hint">{content.contestOptIn.hint}</p>
+      </div>
+
+      <label class="opt survey-nl-toggle">
+        <input type="checkbox" name="contest_optin" />
+        <span class="opt-custom opt-check"></span>
+        <span class="opt-label">{content.contestOptIn.enableLabel}</span>
+      </label>
+
+      <div class="survey-contest-fields" hidden>
+        <div class="contest-row">
+          <input
+            type="text"
+            name="contest_name"
+            autocomplete="name"
+            placeholder={content.contestOptIn.namePlaceholder}
+            aria-label={content.contestOptIn.namePlaceholder}
+          />
+        </div>
+        <div class="contest-row">
+          <input
+            type="email"
+            name="contest_email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder={content.contestOptIn.emailPlaceholder}
+            aria-label={content.contestOptIn.emailPlaceholder}
+          />
+        </div>
+        <label class="nl-consent survey-nl-consent">
+          <input type="checkbox" name="contest_rules" />
+          <span>
+            {content.contestOptIn.rulesBefore}{' '}
+            <a href={content.contestOptIn.rulesHref}>{content.contestOptIn.rulesLink}</a>{content.contestOptIn.rulesAfter}
+          </span>
+        </label>
+      </div>
+    </section>
+
     <section class="survey-newsletter">
       <div class="survey-newsletter-head">
         <span class="survey-newsletter-title">{content.newsletterOptIn.title}</span>
@@ -168,11 +210,13 @@ const numberedSections = content.sections.map(section => ({
 
 <script is:inline define:vars={{
   messages: {
-    required:         content.errors.required,
-    network:          content.errors.network,
-    default:          content.errors.default,
-    invalid_email:    content.errors.invalid_email,
-    consent_required: content.errors.consent_required,
+    required:               content.errors.required,
+    network:                content.errors.network,
+    default:                content.errors.default,
+    invalid_email:          content.errors.invalid_email,
+    consent_required:       content.errors.consent_required,
+    contest_name_required:  lang === 'fr' ? "Veuillez entrer votre nom pour participer au concours." : "Please enter your name to enter the contest.",
+    contest_rules_required: lang === 'fr' ? "Veuillez accepter le règlement du concours." : "Please accept the contest rules.",
   },
   submitLabel: content.submit,
   submittingLabel: content.submitting,
@@ -190,6 +234,12 @@ const numberedSections = content.sections.map(section => ({
   const nlEmail  = form.querySelector('input[name="newsletter_email"]');
   const nlConsent= form.querySelector('input[name="newsletter_consent"]');
 
+  const ctToggle = form.querySelector('input[name="contest_optin"]');
+  const ctFields = form.querySelector('.survey-contest-fields');
+  const ctName   = form.querySelector('input[name="contest_name"]');
+  const ctEmail  = form.querySelector('input[name="contest_email"]');
+  const ctRules  = form.querySelector('input[name="contest_rules"]');
+
   nlToggle.addEventListener('change', () => {
     nlFields.hidden = !nlToggle.checked;
     if (!nlToggle.checked) {
@@ -197,6 +247,17 @@ const numberedSections = content.sections.map(section => ({
       nlConsent.checked = false;
     } else {
       setTimeout(() => nlEmail.focus(), 50);
+    }
+  });
+
+  ctToggle.addEventListener('change', () => {
+    ctFields.hidden = !ctToggle.checked;
+    if (!ctToggle.checked) {
+      ctName.value = '';
+      ctEmail.value = '';
+      ctRules.checked = false;
+    } else {
+      setTimeout(() => ctName.focus(), 50);
     }
   });
 
@@ -246,6 +307,18 @@ const numberedSections = content.sections.map(section => ({
       data.newsletter_consent = true;
     }
 
+    if (ctToggle.checked) {
+      const name = (ctName.value || '').trim();
+      const email = (ctEmail.value || '').trim().toLowerCase();
+      if (!name) throw new Error('contest_name_required');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('contest_email_invalid');
+      if (!ctRules.checked) throw new Error('contest_rules_required');
+      data.contest_optin = true;
+      data.contest_name = name;
+      data.contest_email = email;
+      data.contest_rules = true;
+    }
+
     return data;
   }
 
@@ -266,6 +339,14 @@ const numberedSections = content.sections.map(section => ({
         showError(messages.invalid_email, nlEmail.closest('.survey-newsletter'));
       } else if (msg === 'consent_required') {
         showError(messages.consent_required, nlConsent.closest('.survey-newsletter'));
+      } else if (msg === 'contest_name_required') {
+        showError(messages.contest_name_required, ctName.closest('.survey-contest'));
+        ctName.focus();
+      } else if (msg === 'contest_email_invalid') {
+        showError(messages.invalid_email, ctEmail.closest('.survey-contest'));
+        ctEmail.focus();
+      } else if (msg === 'contest_rules_required') {
+        showError(messages.contest_rules_required, ctRules.closest('.survey-contest'));
       } else {
         showError(messages.default);
       }

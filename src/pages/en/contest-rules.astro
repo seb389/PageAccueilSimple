@@ -1,0 +1,98 @@
+---
+import Base from '../../layouts/Base.astro';
+import { useTranslations } from '../../i18n';
+const tr = useTranslations('en');
+---
+<Base title="LACET · Contest rules" lang="en">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>{tr.region}</span>
+    </div>
+    <div class="corner-right">
+      <a href="/en/sondage" class="back">← Survey</a>
+      <nav class="lang-switcher">
+        <a href="/concours-reglement">FR</a>
+        <span class="lang-sep">·</span>
+        <span class="lang-active">EN</span>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="content-page">
+      <h1>Contest rules</h1>
+      <div class="subtitle">Last updated: April 2026</div>
+
+      <p>
+        These rules govern entry into the prize draw organized by Lacet as part of the service
+        validation survey. By entering, you accept the conditions below.
+      </p>
+
+      <h2>1. Organizer</h2>
+      <p>
+        The contest is organized by Lacet (Québec, Canada). For any question, write to
+        <a href="mailto:info@lacet.ca">info@lacet.ca</a>.
+      </p>
+
+      <h2>2. Eligibility</h2>
+      <p>
+        The contest is open to anyone aged 18 or over residing in Canada, except Lacet
+        employees and members of their immediate family. Residents of Québec must comply with
+        applicable advertising-contest requirements.
+      </p>
+
+      <h2>3. How to enter</h2>
+      <p>
+        To be entered into the draw, complete the Lacet survey and check the
+        <strong>"I'd like to enter the draw"</strong> box, providing your name and email
+        address. Entry is free and no purchase is necessary. One entry per email address.
+      </p>
+
+      <h2>4. Prize</h2>
+      <p>
+        <em>(To be completed — describe the prize, approximate value, and any specific
+        conditions of use.)</em>
+      </p>
+
+      <h2>5. Draw date</h2>
+      <p>
+        The draw will take place <em>(to be completed — contest end date)</em>. The winner
+        will be contacted by email within seven (7) days following the draw and must respond
+        within fourteen (14) days, otherwise a new draw may be held.
+      </p>
+
+      <h2>6. Use of personal information</h2>
+      <p>
+        The name and email provided as part of the contest are used <strong>solely</strong>
+        to manage the draw and contact the winner. This information is kept separately from
+        your survey answers, which remain anonymous. It will be deleted no later than 60 days
+        after the winner is announced.
+      </p>
+      <p>
+        For more details on how your data is handled, see our
+        <a href="/en/privacy">privacy policy</a>.
+      </p>
+
+      <h2>7. Changes and cancellation</h2>
+      <p>
+        Lacet reserves the right to modify these rules or cancel the contest in exceptional
+        circumstances. Participants will be informed via a notice on lacet.ca.
+      </p>
+
+      <h2>8. Contact</h2>
+      <p>
+        Any question about the contest can be sent to
+        <a href="mailto:info@lacet.ca">info@lacet.ca</a>.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <span>{tr.footer_copy}</span>
+    <span class="footer-center"><a href={tr.nl_privacy_href}>{tr.footer_privacy}</a></span>
+    <span>{tr.footer_domain}</span>
+  </footer>
+
+</Base>

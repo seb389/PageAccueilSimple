@@ -1,0 +1,174 @@
+---
+import Base from '../../layouts/Base.astro';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+interface ContestEntry {
+  id: number;
+  created_at: string;
+  lang: string;
+  name: string;
+  email: string;
+  accepted_rules: number;
+  ip_country: string | null;
+}
+
+let entries: ContestEntry[] = [];
+let queryError = '';
+const url = new URL(Astro.request.url);
+const clearedCount = url.searchParams.get('cleared');
+
+try {
+  const r = await env.DB
+    .prepare('SELECT * FROM contest_entries ORDER BY created_at DESC')
+    .all<ContestEntry>();
+  entries = r.results ?? [];
+} catch (err) {
+  queryError = String((err as Error)?.message ?? err);
+  console.error('[admin/contest] query failed', err);
+}
+
+const total = entries.length;
+
+// Count entries from last 7 days
+let recentCount = 0;
+const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+for (const e of entries) {
+  const ts = new Date(e.created_at.replace(' ', 'T') + 'Z').getTime();
+  if (ts >= oneWeekAgo) recentCount++;
+}
+
+function fmtDate(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso.replace(' ', 'T') + 'Z');
+  return d.toLocaleString('fr-CA', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email') ?? 'admin';
+---
+<Base title="LACET · Admin · Concours" lang="fr" theme="light">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>Admin · Lacet</span>
+    </div>
+    <div class="corner-right">
+      <span class="admin-user">{userEmail}</span>
+      <a href="/cdn-cgi/access/logout?returnTo=https://lacet.ca/" class="back">Logout</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="admin-page">
+
+      <nav class="admin-nav">
+        <a href="/admin/survey">Sondage</a>
+        <a href="/admin/contest" class="is-active">Concours</a>
+      </nav>
+
+      {clearedCount !== null && (
+        <div class="test-banner">
+          <strong>Suppression effectuée</strong> — {clearedCount} inscription(s) au concours supprimée(s).
+        </div>
+      )}
+
+      <section class="admin-section">
+        <h1 class="admin-title">Concours</h1>
+
+        {queryError ? (
+          <p class="admin-empty">
+            Impossible de lire la table <code>contest_entries</code>. Vérifiez qu'elle existe :<br />
+            <small style="opacity:0.6">{queryError}</small>
+          </p>
+        ) : (
+          <>
+            <div class="admin-stats">
+              <div class="stat">
+                <div class="stat-value">{total}</div>
+                <div class="stat-label">Inscriptions au tirage</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value">{recentCount}</div>
+                <div class="stat-label">7 derniers jours</div>
+              </div>
+            </div>
+
+            <div class="admin-actions">
+              <a href="/api/admin/export-contest-csv" class="admin-button" download>
+                <span>Télécharger CSV</span>
+                <span aria-hidden="true">↓</span>
+              </a>
+              {total > 0 && (
+                <form method="POST" action="/api/admin/clear-contest" class="inline-form" data-confirm-form>
+                  <input type="hidden" name="confirm" value="DELETE" />
+                  <button type="submit" class="admin-button is-danger">
+                    <span>Effacer toutes les inscriptions</span>
+                    <span aria-hidden="true">⚠</span>
+                  </button>
+                </form>
+              )}
+            </div>
+          </>
+        )}
+      </section>
+
+      {!queryError && total === 0 && (
+        <p class="admin-empty">Aucune inscription pour l'instant.</p>
+      )}
+
+      {!queryError && total > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Inscriptions ({total})</h2>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Date</th>
+                  <th>Nom</th>
+                  <th>Courriel</th>
+                  <th>Lang</th>
+                  <th>Pays</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map(e => (
+                  <tr>
+                    <td>{e.id}</td>
+                    <td>{fmtDate(e.created_at)}</td>
+                    <td>{e.name}</td>
+                    <td><a href={`mailto:${e.email}`}>{e.email}</a></td>
+                    <td>{e.lang}</td>
+                    <td>{e.ip_country ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+    </div>
+  </main>
+
+  <footer>
+    <span>© 2026 Lacet</span>
+    <span class="footer-center">Admin</span>
+    <span>lacet.ca</span>
+  </footer>
+
+</Base>
+
+<script is:inline>
+  // Confirm before destructive form submit
+  document.querySelectorAll('[data-confirm-form]').forEach(form => {
+    form.addEventListener('submit', (e) => {
+      const ok = window.confirm(
+        "Effacer toutes les inscriptions au concours ?\n\nAssurez-vous d'avoir téléchargé le CSV avant.\nCette action est irréversible."
+      );
+      if (!ok) e.preventDefault();
+    });
+  });
+</script>

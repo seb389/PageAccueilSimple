@@ -47,3 +47,19 @@ CREATE TABLE IF NOT EXISTS survey_responses (
 
 CREATE INDEX IF NOT EXISTS idx_survey_created_at ON survey_responses(created_at);
 CREATE INDEX IF NOT EXISTS idx_survey_lang       ON survey_responses(lang);
+
+-- Contest entries (kept SEPARATE from survey_responses to preserve anonymity).
+-- A row here = someone who opted into the prize draw.
+-- There is intentionally NO foreign key or shared id with survey_responses.
+CREATE TABLE IF NOT EXISTS contest_entries (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  lang            TEXT NOT NULL,
+  name            TEXT NOT NULL,
+  email           TEXT NOT NULL,
+  accepted_rules  INTEGER NOT NULL DEFAULT 1,
+  ip_country      TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_contest_created_at ON contest_entries(created_at);
+CREATE INDEX IF NOT EXISTS idx_contest_email      ON contest_entries(email);
