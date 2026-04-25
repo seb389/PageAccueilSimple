@@ -695,6 +695,100 @@ const { title, lang, theme = 'dark' } = Astro.props;
     color: var(--cuivre);
   }
 
+  /* Distribution charts */
+  .admin-meta {
+    font-size: 13px;
+    color: var(--fumee);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .admin-meta strong {
+    color: var(--craie);
+    font-weight: 600;
+  }
+  .dist-group {
+    margin-bottom: 32px;
+  }
+  .dist-group:last-child {
+    margin-bottom: 0;
+  }
+  .dist-group-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fumee);
+    margin: 0 0 14px;
+  }
+  .dist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dist-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 240px) 1fr 110px;
+    align-items: center;
+    gap: 14px;
+    font-size: 12px;
+    padding: 4px 0;
+  }
+  .dist-label {
+    color: var(--craie);
+    line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .dist-bar {
+    height: 8px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .dist-fill {
+    height: 100%;
+    background: var(--cuivre);
+    transition: width 0.4s ease;
+  }
+  .dist-count {
+    color: var(--craie);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    text-align: right;
+  }
+  .dist-pct {
+    color: var(--fumee);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  .dist-row.is-target .dist-fill {
+    background: var(--cuivre);
+    box-shadow: 0 0 0 1px var(--cuivre);
+  }
+  .target-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--cuivre);
+    color: var(--charbon);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .dist-row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .dist-count { text-align: left; }
+  }
+
   /* ── Footer ── */
   footer {
     display: flex;

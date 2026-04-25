@@ -1,42 +1,191 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { env } from 'cloudflare:workers';
+import { survey } from '../../survey';
 
 export const prerender = false;
 
-// Query stats
-let total = 0;
-let byLang: Record<string, number> = { fr: 0, en: 0 };
-let recent: Array<Record<string, any>> = [];
+const content = survey.fr;
 
-try {
-  const totalRes = await env.DB
-    .prepare('SELECT COUNT(*) as n FROM survey_responses')
-    .first<{ n: number }>();
-  total = totalRes?.n ?? 0;
-
-  const langRes = await env.DB
-    .prepare('SELECT lang, COUNT(*) as n FROM survey_responses GROUP BY lang')
-    .all<{ lang: string; n: number }>();
-  for (const row of langRes.results ?? []) {
-    byLang[row.lang] = row.n;
+// ─── Helpers ─────────────────────────────────────────────────────────
+function labelFor(qKey: string, value: string | number): string {
+  for (const section of content.sections) {
+    for (const q of section.questions) {
+      if (q.key === qKey) {
+        if (q.type === 'radio' || q.type === 'checkbox') {
+          return q.options.find(o => o.value === String(value))?.label ?? String(value);
+        }
+        if (q.type === 'scale') return String(value);
+      }
+    }
   }
-
-  const recentRes = await env.DB
-    .prepare('SELECT id, created_at, lang, ip_country, age, region, practice, interest, duration FROM survey_responses ORDER BY created_at DESC LIMIT 20')
-    .all();
-  recent = recentRes.results ?? [];
-} catch (err) {
-  console.error('[admin/survey] query failed', err);
+  return String(value);
 }
-
-const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email') ?? 'admin';
-
+function matrixRowLabel(rowKey: string): string {
+  for (const section of content.sections) {
+    for (const q of section.questions) {
+      if (q.type === 'matrix') {
+        const row = q.rows.find(r => r.key === rowKey);
+        if (row) return row.label;
+      }
+    }
+  }
+  return rowKey;
+}
+function orderByOptions(qKey: string, dist: { v: string; n: number }[]): { value: string; n: number }[] {
+  for (const section of content.sections) {
+    for (const q of section.questions) {
+      if (q.key === qKey && (q.type === 'radio' || q.type === 'checkbox')) {
+        const map = new Map(dist.map(d => [d.v, d.n]));
+        return q.options.map(o => ({ value: o.value, n: map.get(o.value) ?? 0 }));
+      }
+    }
+  }
+  return dist.map(d => ({ value: d.v, n: d.n }));
+}
+function pct(n: number, total: number): string {
+  if (total <= 0) return '0%';
+  return Math.round((n / total) * 100) + '%';
+}
 function fmtDate(iso: string): string {
   if (!iso) return '';
   const d = new Date(iso.replace(' ', 'T') + 'Z');
   return d.toLocaleString('fr-CA', { dateStyle: 'short', timeStyle: 'short' });
 }
+function maxN(arr: { n: number }[]): number {
+  let m = 0;
+  for (const x of arr) if (x.n > m) m = x.n;
+  return m;
+}
+function widthPct(n: number, max: number): number {
+  return max > 0 ? (n / max) * 100 : 0;
+}
+
+// ─── Constants ───────────────────────────────────────────────────────
+const PRICE_TARGETS: { [k: string]: string } = {
+  price_week: '500_700',
+  price_month: '1000_1500',
+  price_season: '2500_3500',
+};
+const PRICE_TITLES: { [k: string]: string } = {
+  price_week: 'Semaine',
+  price_month: 'Mois',
+  price_season: 'Saison',
+};
+const PROFILE_TITLES: { [k: string]: string } = {
+  age: "Tranche d'âge",
+  region: 'Région',
+  practice: 'Pratique du vélo',
+  km_season: 'Kilométrage par saison',
+  bike_value: 'Valeur du vélo actuel',
+};
+
+const PROFILE_KEYS  = ['age', 'region', 'practice', 'km_season', 'bike_value'];
+const PRICE_KEYS    = ['price_week', 'price_month', 'price_season'];
+const SERVICES_ROWS = ['val_delivery','val_bikefit','val_maintenance','val_insurance','val_exchange','val_coaching','val_equipment','val_purchase','val_routes'];
+
+// ─── Queries ─────────────────────────────────────────────────────────
+let total = 0;
+const byLang: { fr: number; en: number } = { fr: 0, en: 0 };
+let highInterest = { high: 0, total: 0, avg: 0 };
+let interestDist: { value: number; n: number }[] = [];
+
+const profileDists: { [k: string]: { value: string; n: number }[] } = {};
+const priceDists:   { [k: string]: { value: string; n: number }[] } = {};
+let durationDist: { value: string; n: number }[] = [];
+let multiBikeType: { value: string; n: number }[] = [];
+let multiContexts: { value: string; n: number }[] = [];
+let topService:    { value: string; n: number }[] = [];
+let mainConcern:   { value: string; n: number }[] = [];
+let servicesEssential: { key: string; n: number }[] = [];
+let recent: any[] = [];
+
+try {
+  const totalRes = await env.DB.prepare('SELECT COUNT(*) as n FROM survey_responses').first<{ n: number }>();
+  total = totalRes?.n ?? 0;
+
+  if (total > 0) {
+    const langRes = await env.DB.prepare('SELECT lang, COUNT(*) as n FROM survey_responses GROUP BY lang').all<{ lang: string; n: number }>();
+    for (const r of langRes.results ?? []) {
+      if (r.lang === 'fr') byLang.fr = r.n;
+      else if (r.lang === 'en') byLang.en = r.n;
+    }
+
+    const interestStats = await env.DB.prepare(
+      "SELECT COUNT(*) as total, SUM(CASE WHEN interest >= 7 THEN 1 ELSE 0 END) as high, AVG(interest) as avg FROM survey_responses"
+    ).first<{ total: number; high: number; avg: number }>();
+    highInterest = {
+      total: interestStats?.total ?? 0,
+      high: interestStats?.high ?? 0,
+      avg: interestStats?.avg ?? 0,
+    };
+
+    const intRes = await env.DB.prepare('SELECT interest as v, COUNT(*) as n FROM survey_responses GROUP BY interest ORDER BY interest ASC').all<{ v: number; n: number }>();
+    const intMap: { [k: number]: number } = {};
+    for (const r of intRes.results ?? []) intMap[r.v] = r.n;
+    interestDist = Array.from({ length: 10 }, (_, i) => ({ value: i + 1, n: intMap[i + 1] ?? 0 }));
+
+    for (const k of PROFILE_KEYS) {
+      const r = await env.DB.prepare(`SELECT ${k} as v, COUNT(*) as n FROM survey_responses GROUP BY ${k}`).all<{ v: string; n: number }>();
+      profileDists[k] = orderByOptions(k, r.results ?? []);
+    }
+    for (const k of PRICE_KEYS) {
+      const r = await env.DB.prepare(`SELECT ${k} as v, COUNT(*) as n FROM survey_responses GROUP BY ${k}`).all<{ v: string; n: number }>();
+      priceDists[k] = orderByOptions(k, r.results ?? []);
+    }
+
+    const durRes = await env.DB.prepare(`SELECT duration as v, COUNT(*) as n FROM survey_responses GROUP BY duration`).all<{ v: string; n: number }>();
+    durationDist = orderByOptions('duration', durRes.results ?? []);
+
+    const btRes = await env.DB.prepare(
+      "SELECT value as v, COUNT(*) as n FROM survey_responses, json_each(survey_responses.bike_type) GROUP BY value"
+    ).all<{ v: string; n: number }>();
+    multiBikeType = orderByOptions('bike_type', btRes.results ?? []);
+
+    const ctxRes = await env.DB.prepare(
+      "SELECT value as v, COUNT(*) as n FROM survey_responses, json_each(survey_responses.contexts) GROUP BY value"
+    ).all<{ v: string; n: number }>();
+    multiContexts = orderByOptions('contexts', ctxRes.results ?? []);
+
+    const tsRes = await env.DB.prepare(`SELECT top_service as v, COUNT(*) as n FROM survey_responses GROUP BY top_service`).all<{ v: string; n: number }>();
+    topService = orderByOptions('top_service', tsRes.results ?? []).filter(x => x.n > 0);
+    topService.sort((a, b) => b.n - a.n);
+
+    const mcRes = await env.DB.prepare(`SELECT main_concern as v, COUNT(*) as n FROM survey_responses GROUP BY main_concern`).all<{ v: string; n: number }>();
+    mainConcern = orderByOptions('main_concern', mcRes.results ?? []).filter(x => x.n > 0);
+    mainConcern.sort((a, b) => b.n - a.n);
+
+    const matrixCases = SERVICES_ROWS.map(r => `SUM(CASE WHEN ${r} = 'essential' THEN 1 ELSE 0 END) as ${r}`).join(', ');
+    const matrixRow = await env.DB.prepare(`SELECT ${matrixCases} FROM survey_responses`).first<{ [k: string]: number }>();
+    if (matrixRow) {
+      servicesEssential = SERVICES_ROWS.map(r => ({ key: r, n: Number(matrixRow[r] ?? 0) })).sort((a, b) => b.n - a.n);
+    }
+
+    const recentRes = await env.DB.prepare(
+      'SELECT id, created_at, lang, ip_country, age, region, practice, interest, duration FROM survey_responses ORDER BY created_at DESC LIMIT 20'
+    ).all();
+    recent = recentRes.results ?? [];
+  }
+} catch (err) {
+  console.error('[admin/survey] query failed', err);
+}
+
+// Pre-compute max per distribution for bar widths
+const maxes = {
+  interest:           maxN(interestDist),
+  duration:           maxN(durationDist),
+  bikeType:           maxN(multiBikeType),
+  contexts:           maxN(multiContexts),
+  topService:         maxN(topService),
+  mainConcern:        maxN(mainConcern),
+  servicesEssential:  maxN(servicesEssential),
+};
+const profileMaxes: { [k: string]: number } = {};
+for (const k of PROFILE_KEYS) profileMaxes[k] = maxN(profileDists[k] ?? []);
+const priceMaxes: { [k: string]: number } = {};
+for (const k of PRICE_KEYS) priceMaxes[k] = maxN(priceDists[k] ?? []);
+
+const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email') ?? 'admin';
 ---
 <Base title="LACET · Admin" lang="fr" theme="light">
 
@@ -59,20 +208,21 @@ function fmtDate(iso: string): string {
         <div class="admin-stats">
           <div class="stat">
             <div class="stat-value">{total}</div>
-            <div class="stat-label">Réponses totales</div>
+            <div class="stat-label">Réponses</div>
           </div>
           <div class="stat">
-            <div class="stat-value">{byLang.fr ?? 0}</div>
+            <div class="stat-value">{byLang.fr}</div>
             <div class="stat-label">Français</div>
           </div>
           <div class="stat">
-            <div class="stat-value">{byLang.en ?? 0}</div>
+            <div class="stat-value">{byLang.en}</div>
             <div class="stat-label">English</div>
           </div>
+          <div class="stat">
+            <div class="stat-value">{pct(highInterest.high, highInterest.total)}</div>
+            <div class="stat-label">Intérêt ≥ 7/10</div>
+          </div>
         </div>
-      </section>
-
-      <section class="admin-section">
         <div class="admin-actions">
           <a href="/api/admin/export-csv" class="admin-button" download>
             <span>Télécharger CSV complet</span>
@@ -81,11 +231,164 @@ function fmtDate(iso: string): string {
         </div>
       </section>
 
-      <section class="admin-section">
-        <h2 class="admin-subtitle">Dernières réponses</h2>
-        {recent.length === 0 ? (
-          <p class="admin-empty">Aucune réponse pour l'instant.</p>
-        ) : (
+      {total === 0 && (
+        <p class="admin-empty">Aucune réponse pour l'instant. Les analyses apparaîtront dès la première soumission.</p>
+      )}
+
+      {total > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Validation de la demande</h2>
+          <p class="admin-meta">Score moyen : <strong>{highInterest.avg.toFixed(1)} / 10</strong> · {highInterest.high} sur {highInterest.total} ont un intérêt fort (≥ 7)</p>
+          <div class="dist">
+            {interestDist.map(item => (
+              <div class="dist-row">
+                <span class="dist-label">{item.value}/10</span>
+                <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.interest)}%`}></div></div>
+                <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {total > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Prix jugés raisonnables</h2>
+          {PRICE_KEYS.map(qKey => (
+            <div class="dist-group">
+              <h3 class="dist-group-title">{PRICE_TITLES[qKey]}</h3>
+              <div class="dist">
+                {(priceDists[qKey] ?? []).map(item => (
+                  <div class={`dist-row ${item.value === PRICE_TARGETS[qKey] ? 'is-target' : ''}`}>
+                    <span class="dist-label">
+                      {labelFor(qKey, item.value)}
+                      {item.value === PRICE_TARGETS[qKey] && <span class="target-tag">cible</span>}
+                    </span>
+                    <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, priceMaxes[qKey])}%`}></div></div>
+                    <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {total > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Préférences</h2>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">Type de vélo (multi-choix)</h3>
+            <div class="dist">
+              {multiBikeType.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{labelFor('bike_type', item.value)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.bikeType)}%`}></div></div>
+                  <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">Durée préférée</h3>
+            <div class="dist">
+              {durationDist.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{labelFor('duration', item.value)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.duration)}%`}></div></div>
+                  <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">Contextes d'utilisation (multi-choix)</h3>
+            <div class="dist">
+              {multiContexts.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{labelFor('contexts', item.value)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.contexts)}%`}></div></div>
+                  <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {total > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Services prioritaires</h2>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">Notés « Indispensable »</h3>
+            <div class="dist">
+              {servicesEssential.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{matrixRowLabel(item.key)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.servicesEssential)}%`}></div></div>
+                  <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">Service le plus déterminant</h3>
+            <div class="dist">
+              {topService.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{labelFor('top_service', item.value)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.topService)}%`}></div></div>
+                  <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {total > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Profil des répondants</h2>
+          {PROFILE_KEYS.map(qKey => (
+            <div class="dist-group">
+              <h3 class="dist-group-title">{PROFILE_TITLES[qKey]}</h3>
+              <div class="dist">
+                {(profileDists[qKey] ?? []).map(item => (
+                  <div class="dist-row">
+                    <span class="dist-label">{labelFor(qKey, item.value)}</span>
+                    <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, profileMaxes[qKey])}%`}></div></div>
+                    <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {total > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Principal frein</h2>
+          <div class="dist">
+            {mainConcern.map(item => (
+              <div class="dist-row">
+                <span class="dist-label">{labelFor('main_concern', item.value)}</span>
+                <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.mainConcern)}%`}></div></div>
+                <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {total > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Dernières réponses</h2>
           <div class="admin-table-wrap">
             <table class="admin-table">
               <thead>
@@ -108,18 +411,18 @@ function fmtDate(iso: string): string {
                     <td>{fmtDate(r.created_at)}</td>
                     <td>{r.lang}</td>
                     <td>{r.ip_country ?? '—'}</td>
-                    <td>{r.age}</td>
-                    <td>{r.region}</td>
-                    <td>{r.practice}</td>
+                    <td>{labelFor('age', r.age)}</td>
+                    <td>{labelFor('region', r.region)}</td>
+                    <td>{labelFor('practice', r.practice)}</td>
                     <td>{r.interest}/10</td>
-                    <td>{r.duration}</td>
+                    <td>{labelFor('duration', r.duration)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
     </div>
   </main>
