@@ -1,0 +1,275 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { env } from 'cloudflare:workers';
+import { survey } from '../../../survey';
+import { TEST_RESPONSES, type SurveyResponse } from '../../../admin/test-data';
+
+export const prerender = false;
+
+const content = survey.fr;
+const url = new URL(Astro.request.url);
+const isTest = url.searchParams.get('mode') === 'test';
+const idParam = Astro.params.id;
+const id = parseInt(String(idParam), 10);
+
+let response: SurveyResponse | null = null;
+
+if (Number.isFinite(id)) {
+  if (isTest) {
+    response = TEST_RESPONSES.find(r => r.id === id) ?? null;
+  } else {
+    try {
+      const r = await env.DB
+        .prepare('SELECT * FROM survey_responses WHERE id = ?')
+        .bind(id)
+        .first<SurveyResponse>();
+      response = r ?? null;
+    } catch (err) {
+      console.error('[admin/survey/:id] query failed', err);
+    }
+  }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────
+function labelFor(qKey: string, value: string | number | null | undefined): string {
+  if (value == null) return '—';
+  for (const section of content.sections) {
+    for (const q of section.questions) {
+      if (q.key === qKey) {
+        if (q.type === 'radio' || q.type === 'checkbox') {
+          return q.options.find(o => o.value === String(value))?.label ?? String(value);
+        }
+        if (q.type === 'scale') return String(value);
+      }
+    }
+  }
+  return String(value);
+}
+function matrixRowLabel(rowKey: string): string {
+  for (const section of content.sections) {
+    for (const q of section.questions) {
+      if (q.type === 'matrix') {
+        const row = q.rows.find(r => r.key === rowKey);
+        if (row) return row.label;
+      }
+    }
+  }
+  return rowKey;
+}
+function matrixColLabel(value: string): string {
+  for (const section of content.sections) {
+    for (const q of section.questions) {
+      if (q.type === 'matrix') {
+        const col = q.columns.find(c => c.value === value);
+        if (col) return col.label;
+      }
+    }
+  }
+  return value;
+}
+function fmtDate(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso.replace(' ', 'T') + 'Z');
+  return d.toLocaleString('fr-CA', { dateStyle: 'long', timeStyle: 'short' });
+}
+function parseJsonArray(value: string | null | undefined): string[] {
+  if (!value) return [];
+  try { return JSON.parse(String(value)); } catch { return []; }
+}
+function multiLabels(qKey: string, value: string | null | undefined): string {
+  const arr = parseJsonArray(value);
+  if (arr.length === 0) return '—';
+  return arr.map(v => labelFor(qKey, v)).join(', ');
+}
+function valTone(value: string): string {
+  switch (value) {
+    case 'essential':    return 'tone-essential';
+    case 'interesting':  return 'tone-interesting';
+    case 'low_priority': return 'tone-low';
+    case 'not_relevant': return 'tone-none';
+    default:             return '';
+  }
+}
+
+const SERVICES_ROWS = ['val_delivery','val_bikefit','val_maintenance','val_insurance','val_exchange','val_coaching','val_equipment','val_purchase','val_routes'] as const;
+
+const PRICE_TARGETS: { [k: string]: string } = {
+  price_week: '500_700',
+  price_month: '1000_1500',
+  price_season: '2500_3500',
+};
+
+function listUrl(): string {
+  return isTest ? '/admin/survey?mode=test' : '/admin/survey';
+}
+
+const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email') ?? 'admin';
+const title = response ? `LACET · Réponse #${response.id}` : 'LACET · Réponse introuvable';
+---
+<Base title={title} lang="fr" theme="light">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>Admin · Lacet</span>
+    </div>
+    <div class="corner-right">
+      <span class="admin-user">{userEmail}</span>
+      <a href="/cdn-cgi/access/logout?returnTo=https://lacet.ca/" class="back">Logout</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="admin-page">
+
+      <a href={listUrl()} class="back-link">← Retour à la liste</a>
+
+      {isTest && (
+        <div class="test-banner">
+          <strong>Mode test</strong> — réponse fictive issue des données de démonstration.
+        </div>
+      )}
+
+      {!response ? (
+        <section class="admin-section">
+          <h1 class="admin-title">Réponse introuvable</h1>
+          <p class="admin-empty">Aucune réponse avec l'identifiant <code>{idParam}</code>{isTest ? ' dans les données de test' : ''}.</p>
+        </section>
+      ) : (
+        <>
+          <section class="admin-section">
+            <h1 class="admin-title">Réponse #{response.id}</h1>
+            <p class="admin-meta">
+              {fmtDate(response.created_at)} · Langue : <strong>{response.lang.toUpperCase()}</strong>
+              {response.ip_country && <> · Pays : <strong>{response.ip_country}</strong></>}
+            </p>
+          </section>
+
+          <section class="admin-section">
+            <h2 class="admin-subtitle">Profil</h2>
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>Tranche d'âge</dt>
+                <dd>{labelFor('age', response.age)}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>Région</dt>
+                <dd>{labelFor('region', response.region)}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>Pratique du vélo</dt>
+                <dd>{labelFor('practice', response.practice)}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>Kilométrage par saison</dt>
+                <dd>{labelFor('km_season', response.km_season)}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>Valeur du vélo actuel</dt>
+                <dd>{labelFor('bike_value', response.bike_value)}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="admin-section">
+            <h2 class="admin-subtitle">Intérêt et contexte</h2>
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>Score d'intérêt</dt>
+                <dd><strong>{response.interest} / 10</strong></dd>
+              </div>
+              <div class="detail-row">
+                <dt>A déjà loué un vélo</dt>
+                <dd>{labelFor('rented_before', response.rented_before)}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>Contextes d'utilisation</dt>
+                <dd>{multiLabels('contexts', response.contexts)}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>Type(s) de vélo</dt>
+                <dd>{multiLabels('bike_type', response.bike_type)}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>Durée de location préférée</dt>
+                <dd>{labelFor('duration', response.duration)}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="admin-section">
+            <h2 class="admin-subtitle">Prix jugés raisonnables</h2>
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>Pour une semaine</dt>
+                <dd>
+                  {labelFor('price_week', response.price_week)}
+                  {response.price_week === PRICE_TARGETS.price_week && <span class="target-tag">cible</span>}
+                </dd>
+              </div>
+              <div class="detail-row">
+                <dt>Pour un mois</dt>
+                <dd>
+                  {labelFor('price_month', response.price_month)}
+                  {response.price_month === PRICE_TARGETS.price_month && <span class="target-tag">cible</span>}
+                </dd>
+              </div>
+              <div class="detail-row">
+                <dt>Pour une saison</dt>
+                <dd>
+                  {labelFor('price_season', response.price_season)}
+                  {response.price_season === PRICE_TARGETS.price_season && <span class="target-tag">cible</span>}
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="admin-section">
+            <h2 class="admin-subtitle">Évaluation des services</h2>
+            <dl class="detail-list">
+              {SERVICES_ROWS.map(rowKey => {
+                const v = String(response[rowKey] ?? '');
+                return (
+                  <div class="detail-row">
+                    <dt>{matrixRowLabel(rowKey)}</dt>
+                    <dd><span class={`detail-tag ${valTone(v)}`}>{matrixColLabel(v) || '—'}</span></dd>
+                  </div>
+                );
+              })}
+              <div class="detail-row">
+                <dt>Service le plus déterminant</dt>
+                <dd><strong>{labelFor('top_service', response.top_service)}</strong></dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="admin-section">
+            <h2 class="admin-subtitle">Frein et commentaires</h2>
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>Principal frein</dt>
+                <dd>{labelFor('main_concern', response.main_concern)}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>Commentaire libre</dt>
+                <dd>
+                  {response.comments
+                    ? <blockquote class="detail-quote">{response.comments}</blockquote>
+                    : <span class="muted">— (aucun commentaire)</span>}
+                </dd>
+              </div>
+            </dl>
+          </section>
+        </>
+      )}
+
+    </div>
+  </main>
+
+  <footer>
+    <span>© 2026 Lacet</span>
+    <span class="footer-center">Admin{isTest && ' · Mode test'}</span>
+    <span>lacet.ca</span>
+  </footer>
+
+</Base>

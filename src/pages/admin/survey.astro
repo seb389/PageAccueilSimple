@@ -162,7 +162,30 @@ const servicesEssential = SERVICES_ROWS
   .map(row => ({ key: row, n: allResponses.filter(r => r[row] === 'essential').length }))
   .sort((a, b) => b.n - a.n);
 
-const recent = allResponses.slice(0, 20);
+// Pagination
+const PAGE_SIZE = 20;
+const totalPages = Math.max(1, Math.ceil(allResponses.length / PAGE_SIZE));
+const requestedPage = parseInt(url.searchParams.get('page') ?? '1', 10) || 1;
+const currentPage = Math.min(Math.max(1, requestedPage), totalPages);
+const pageOffset = (currentPage - 1) * PAGE_SIZE;
+const pageResponses = allResponses.slice(pageOffset, pageOffset + PAGE_SIZE);
+const pageStart = total > 0 ? pageOffset + 1 : 0;
+const pageEnd = pageOffset + pageResponses.length;
+
+function pageUrl(p: number): string {
+  const params = new URLSearchParams();
+  if (isTest) params.set('mode', 'test');
+  if (p > 1) params.set('page', String(p));
+  const qs = params.toString();
+  return '/admin/survey' + (qs ? '?' + qs : '') + '#responses';
+}
+function detailUrl(id: number): string {
+  return isTest ? `/admin/survey/${id}?mode=test` : `/admin/survey/${id}`;
+}
+function previewComment(c: string | null): string {
+  if (!c) return '';
+  return c.length > 60 ? c.slice(0, 57) + '…' : c;
+}
 
 // Pre-compute max per distribution
 const maxes = {
@@ -392,10 +415,11 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
       )}
 
       {total > 0 && (
-        <section class="admin-section">
-          <h2 class="admin-subtitle">Dernières réponses</h2>
+        <section class="admin-section" id="responses">
+          <h2 class="admin-subtitle">Toutes les réponses</h2>
+          <p class="admin-meta">{pageStart}–{pageEnd} sur {total}</p>
           <div class="admin-table-wrap">
-            <table class="admin-table">
+            <table class="admin-table is-clickable">
               <thead>
                 <tr>
                   <th>#</th>
@@ -407,11 +431,12 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
                   <th>Pratique</th>
                   <th>Intérêt</th>
                   <th>Durée</th>
+                  <th>Commentaire</th>
                 </tr>
               </thead>
               <tbody>
-                {recent.map(r => (
-                  <tr>
+                {pageResponses.map((r: SurveyResponse) => (
+                  <tr onclick={`window.location='${detailUrl(r.id)}'`}>
                     <td>{r.id}</td>
                     <td>{fmtDate(r.created_at)}</td>
                     <td>{r.lang}</td>
@@ -421,11 +446,21 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
                     <td>{labelFor('practice', r.practice)}</td>
                     <td>{r.interest}/10</td>
                     <td>{labelFor('duration', r.duration)}</td>
+                    <td class="td-comment">{previewComment(r.comments)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <nav class="pagination">
+              <a href={pageUrl(1)} class={`pag-btn ${currentPage === 1 ? 'is-disabled' : ''}`} aria-label="Premier">«</a>
+              <a href={pageUrl(currentPage - 1)} class={`pag-btn ${currentPage === 1 ? 'is-disabled' : ''}`}>← Précédent</a>
+              <span class="pag-info">Page {currentPage} / {totalPages}</span>
+              <a href={pageUrl(currentPage + 1)} class={`pag-btn ${currentPage === totalPages ? 'is-disabled' : ''}`}>Suivant →</a>
+              <a href={pageUrl(totalPages)} class={`pag-btn ${currentPage === totalPages ? 'is-disabled' : ''}`} aria-label="Dernier">»</a>
+            </nav>
+          )}
         </section>
       )}
 
