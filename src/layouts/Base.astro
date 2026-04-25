@@ -2,8 +2,9 @@
 interface Props {
   title: string;
   lang: 'fr' | 'en';
+  theme?: 'dark' | 'light';
 }
-const { title, lang } = Astro.props;
+const { title, lang, theme = 'dark' } = Astro.props;
 ---
 <!DOCTYPE html>
 <html lang={lang}>
@@ -11,7 +12,7 @@ const { title, lang } = Astro.props;
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{title}</title>
-<meta name="theme-color" content="#0f0f0f" />
+<meta name="theme-color" content={theme === 'light' ? '#fafaf7' : '#0f0f0f'} />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <style is:global>
   @font-face {
@@ -41,6 +42,12 @@ const { title, lang } = Astro.props;
     --cuivre:  #b66a3e;
     --fumee:   #8a8680;
     --line:    rgba(244, 241, 236, 0.12);
+  }
+  body[data-theme="light"] {
+    --charbon: #fafaf7;
+    --craie:   #1a1a1a;
+    --fumee:   #6b6760;
+    --line:    rgba(15, 15, 15, 0.12);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -608,7 +615,7 @@ const { title, lang } = Astro.props;
   .stat {
     padding: 24px 20px;
     border: 1px solid var(--line);
-    background: rgba(244, 241, 236, 0.015);
+    background: transparent;
   }
   .stat-value {
     font-size: 42px;
@@ -685,7 +692,7 @@ const { title, lang } = Astro.props;
     border-bottom: none;
   }
   .admin-table tbody tr:hover td {
-    background: rgba(244, 241, 236, 0.025);
+    color: var(--cuivre);
   }
 
   /* ── Footer ── */
@@ -1144,7 +1151,7 @@ const { title, lang } = Astro.props;
   }
 </style>
 </head>
-<body>
+<body data-theme={theme}>
   <slot />
 </body>
 </html>

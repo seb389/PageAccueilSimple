@@ -38,7 +38,7 @@ function fmtDate(iso: string): string {
   return d.toLocaleString('fr-CA', { dateStyle: 'short', timeStyle: 'short' });
 }
 ---
-<Base title="LACET · Admin" lang="fr">
+<Base title="LACET · Admin" lang="fr" theme="light">
 
   <header class="corner">
     <div class="corner-left">
@@ -47,7 +47,7 @@ function fmtDate(iso: string): string {
     </div>
     <div class="corner-right">
       <span class="admin-user">{userEmail}</span>
-      <a href="/cdn-cgi/access/logout" class="back">Logout</a>
+      <a href="/cdn-cgi/access/logout?returnTo=https://lacet.ca/" class="back">Logout</a>
     </div>
   </header>
 
