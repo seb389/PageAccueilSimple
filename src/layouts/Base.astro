@@ -7,7 +7,7 @@ interface Props {
 const { title, lang, theme = 'dark' } = Astro.props;
 ---
 <!DOCTYPE html>
-<html lang={lang}>
+<html lang={lang} data-theme={theme}>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -43,7 +43,7 @@ const { title, lang, theme = 'dark' } = Astro.props;
     --fumee:   #8a8680;
     --line:    rgba(244, 241, 236, 0.12);
   }
-  body[data-theme="light"] {
+  :root[data-theme="light"] {
     --charbon: #fafaf7;
     --craie:   #1a1a1a;
     --fumee:   #6b6760;
@@ -1245,7 +1245,7 @@ const { title, lang, theme = 'dark' } = Astro.props;
   }
 </style>
 </head>
-<body data-theme={theme}>
+<body>
   <slot />
 </body>
 </html>
