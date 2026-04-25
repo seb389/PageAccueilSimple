@@ -2,10 +2,13 @@
 import Base from '../../layouts/Base.astro';
 import { env } from 'cloudflare:workers';
 import { survey } from '../../survey';
+import { TEST_RESPONSES, type SurveyResponse } from '../../admin/test-data';
 
 export const prerender = false;
 
 const content = survey.fr;
+const url = new URL(Astro.request.url);
+const isTest = url.searchParams.get('mode') === 'test';
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 function labelFor(qKey: string, value: string | number): string {
@@ -32,17 +35,6 @@ function matrixRowLabel(rowKey: string): string {
   }
   return rowKey;
 }
-function orderByOptions(qKey: string, dist: { v: string; n: number }[]): { value: string; n: number }[] {
-  for (const section of content.sections) {
-    for (const q of section.questions) {
-      if (q.key === qKey && (q.type === 'radio' || q.type === 'checkbox')) {
-        const map = new Map(dist.map(d => [d.v, d.n]));
-        return q.options.map(o => ({ value: o.value, n: map.get(o.value) ?? 0 }));
-      }
-    }
-  }
-  return dist.map(d => ({ value: d.v, n: d.n }));
-}
 function pct(n: number, total: number): string {
   if (total <= 0) return '0%';
   return Math.round((n / total) * 100) + '%';
@@ -59,6 +51,36 @@ function maxN(arr: { n: number }[]): number {
 }
 function widthPct(n: number, max: number): number {
   return max > 0 ? (n / max) * 100 : 0;
+}
+
+// ─── Aggregation helpers (work on response arrays) ───────────────────
+function distSingle(rows: SurveyResponse[], field: keyof SurveyResponse): { value: string; n: number }[] {
+  const counts = new Map<string, number>();
+  for (const r of rows) {
+    const v = String(r[field] ?? '');
+    if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
+  }
+  return Array.from(counts.entries()).map(([value, n]) => ({ value, n }));
+}
+function distMulti(rows: SurveyResponse[], field: keyof SurveyResponse): { value: string; n: number }[] {
+  const counts = new Map<string, number>();
+  for (const r of rows) {
+    let arr: string[] = [];
+    try { arr = JSON.parse(String(r[field] ?? '[]')); } catch {}
+    for (const v of arr) counts.set(v, (counts.get(v) ?? 0) + 1);
+  }
+  return Array.from(counts.entries()).map(([value, n]) => ({ value, n }));
+}
+function orderByOptions(qKey: string, dist: { value: string; n: number }[]): { value: string; n: number }[] {
+  for (const section of content.sections) {
+    for (const q of section.questions) {
+      if (q.key === qKey && (q.type === 'radio' || q.type === 'checkbox')) {
+        const map = new Map(dist.map(d => [d.value, d.n]));
+        return q.options.map(o => ({ value: o.value, n: map.get(o.value) ?? 0 }));
+      }
+    }
+  }
+  return dist;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────
@@ -80,97 +102,69 @@ const PROFILE_TITLES: { [k: string]: string } = {
   bike_value: 'Valeur du vélo actuel',
 };
 
-const PROFILE_KEYS  = ['age', 'region', 'practice', 'km_season', 'bike_value'];
-const PRICE_KEYS    = ['price_week', 'price_month', 'price_season'];
-const SERVICES_ROWS = ['val_delivery','val_bikefit','val_maintenance','val_insurance','val_exchange','val_coaching','val_equipment','val_purchase','val_routes'];
+const PROFILE_KEYS  = ['age', 'region', 'practice', 'km_season', 'bike_value'] as const;
+const PRICE_KEYS    = ['price_week', 'price_month', 'price_season'] as const;
+const SERVICES_ROWS = ['val_delivery','val_bikefit','val_maintenance','val_insurance','val_exchange','val_coaching','val_equipment','val_purchase','val_routes'] as const;
 
-// ─── Queries ─────────────────────────────────────────────────────────
-let total = 0;
-const byLang: { fr: number; en: number } = { fr: 0, en: 0 };
-let highInterest = { high: 0, total: 0, avg: 0 };
-let interestDist: { value: number; n: number }[] = [];
+// ─── Load data ───────────────────────────────────────────────────────
+let allResponses: SurveyResponse[] = [];
 
-const profileDists: { [k: string]: { value: string; n: number }[] } = {};
-const priceDists:   { [k: string]: { value: string; n: number }[] } = {};
-let durationDist: { value: string; n: number }[] = [];
-let multiBikeType: { value: string; n: number }[] = [];
-let multiContexts: { value: string; n: number }[] = [];
-let topService:    { value: string; n: number }[] = [];
-let mainConcern:   { value: string; n: number }[] = [];
-let servicesEssential: { key: string; n: number }[] = [];
-let recent: any[] = [];
-
-try {
-  const totalRes = await env.DB.prepare('SELECT COUNT(*) as n FROM survey_responses').first<{ n: number }>();
-  total = totalRes?.n ?? 0;
-
-  if (total > 0) {
-    const langRes = await env.DB.prepare('SELECT lang, COUNT(*) as n FROM survey_responses GROUP BY lang').all<{ lang: string; n: number }>();
-    for (const r of langRes.results ?? []) {
-      if (r.lang === 'fr') byLang.fr = r.n;
-      else if (r.lang === 'en') byLang.en = r.n;
-    }
-
-    const interestStats = await env.DB.prepare(
-      "SELECT COUNT(*) as total, SUM(CASE WHEN interest >= 7 THEN 1 ELSE 0 END) as high, AVG(interest) as avg FROM survey_responses"
-    ).first<{ total: number; high: number; avg: number }>();
-    highInterest = {
-      total: interestStats?.total ?? 0,
-      high: interestStats?.high ?? 0,
-      avg: interestStats?.avg ?? 0,
-    };
-
-    const intRes = await env.DB.prepare('SELECT interest as v, COUNT(*) as n FROM survey_responses GROUP BY interest ORDER BY interest ASC').all<{ v: number; n: number }>();
-    const intMap: { [k: number]: number } = {};
-    for (const r of intRes.results ?? []) intMap[r.v] = r.n;
-    interestDist = Array.from({ length: 10 }, (_, i) => ({ value: i + 1, n: intMap[i + 1] ?? 0 }));
-
-    for (const k of PROFILE_KEYS) {
-      const r = await env.DB.prepare(`SELECT ${k} as v, COUNT(*) as n FROM survey_responses GROUP BY ${k}`).all<{ v: string; n: number }>();
-      profileDists[k] = orderByOptions(k, r.results ?? []);
-    }
-    for (const k of PRICE_KEYS) {
-      const r = await env.DB.prepare(`SELECT ${k} as v, COUNT(*) as n FROM survey_responses GROUP BY ${k}`).all<{ v: string; n: number }>();
-      priceDists[k] = orderByOptions(k, r.results ?? []);
-    }
-
-    const durRes = await env.DB.prepare(`SELECT duration as v, COUNT(*) as n FROM survey_responses GROUP BY duration`).all<{ v: string; n: number }>();
-    durationDist = orderByOptions('duration', durRes.results ?? []);
-
-    const btRes = await env.DB.prepare(
-      "SELECT value as v, COUNT(*) as n FROM survey_responses, json_each(survey_responses.bike_type) GROUP BY value"
-    ).all<{ v: string; n: number }>();
-    multiBikeType = orderByOptions('bike_type', btRes.results ?? []);
-
-    const ctxRes = await env.DB.prepare(
-      "SELECT value as v, COUNT(*) as n FROM survey_responses, json_each(survey_responses.contexts) GROUP BY value"
-    ).all<{ v: string; n: number }>();
-    multiContexts = orderByOptions('contexts', ctxRes.results ?? []);
-
-    const tsRes = await env.DB.prepare(`SELECT top_service as v, COUNT(*) as n FROM survey_responses GROUP BY top_service`).all<{ v: string; n: number }>();
-    topService = orderByOptions('top_service', tsRes.results ?? []).filter(x => x.n > 0);
-    topService.sort((a, b) => b.n - a.n);
-
-    const mcRes = await env.DB.prepare(`SELECT main_concern as v, COUNT(*) as n FROM survey_responses GROUP BY main_concern`).all<{ v: string; n: number }>();
-    mainConcern = orderByOptions('main_concern', mcRes.results ?? []).filter(x => x.n > 0);
-    mainConcern.sort((a, b) => b.n - a.n);
-
-    const matrixCases = SERVICES_ROWS.map(r => `SUM(CASE WHEN ${r} = 'essential' THEN 1 ELSE 0 END) as ${r}`).join(', ');
-    const matrixRow = await env.DB.prepare(`SELECT ${matrixCases} FROM survey_responses`).first<{ [k: string]: number }>();
-    if (matrixRow) {
-      servicesEssential = SERVICES_ROWS.map(r => ({ key: r, n: Number(matrixRow[r] ?? 0) })).sort((a, b) => b.n - a.n);
-    }
-
-    const recentRes = await env.DB.prepare(
-      'SELECT id, created_at, lang, ip_country, age, region, practice, interest, duration FROM survey_responses ORDER BY created_at DESC LIMIT 20'
-    ).all();
-    recent = recentRes.results ?? [];
+if (isTest) {
+  allResponses = TEST_RESPONSES;
+} else {
+  try {
+    const r = await env.DB
+      .prepare('SELECT * FROM survey_responses ORDER BY created_at DESC')
+      .all<SurveyResponse>();
+    allResponses = r.results ?? [];
+  } catch (err) {
+    console.error('[admin/survey] query failed', err);
   }
-} catch (err) {
-  console.error('[admin/survey] query failed', err);
 }
 
-// Pre-compute max per distribution for bar widths
+// ─── Compute aggregates ──────────────────────────────────────────────
+const total = allResponses.length;
+
+const byLang = { fr: 0, en: 0 };
+for (const r of allResponses) {
+  if (r.lang === 'fr') byLang.fr++;
+  else if (r.lang === 'en') byLang.en++;
+}
+
+let highCount = 0;
+let interestSum = 0;
+for (const r of allResponses) {
+  if (r.interest >= 7) highCount++;
+  interestSum += r.interest;
+}
+const interestAvg = total > 0 ? interestSum / total : 0;
+
+const intCounts: { [k: number]: number } = {};
+for (const r of allResponses) intCounts[r.interest] = (intCounts[r.interest] ?? 0) + 1;
+const interestDist = Array.from({ length: 10 }, (_, i) => ({ value: i + 1, n: intCounts[i + 1] ?? 0 }));
+
+const profileDists: { [k: string]: { value: string; n: number }[] } = {};
+for (const k of PROFILE_KEYS) profileDists[k] = orderByOptions(k, distSingle(allResponses, k));
+
+const priceDists: { [k: string]: { value: string; n: number }[] } = {};
+for (const k of PRICE_KEYS) priceDists[k] = orderByOptions(k, distSingle(allResponses, k));
+
+const durationDist = orderByOptions('duration', distSingle(allResponses, 'duration'));
+const multiBikeType = orderByOptions('bike_type', distMulti(allResponses, 'bike_type'));
+const multiContexts = orderByOptions('contexts', distMulti(allResponses, 'contexts'));
+
+const topService = orderByOptions('top_service', distSingle(allResponses, 'top_service'))
+  .filter(x => x.n > 0).sort((a, b) => b.n - a.n);
+const mainConcern = orderByOptions('main_concern', distSingle(allResponses, 'main_concern'))
+  .filter(x => x.n > 0).sort((a, b) => b.n - a.n);
+
+const servicesEssential = SERVICES_ROWS
+  .map(row => ({ key: row, n: allResponses.filter(r => r[row] === 'essential').length }))
+  .sort((a, b) => b.n - a.n);
+
+const recent = allResponses.slice(0, 20);
+
+// Pre-compute max per distribution
 const maxes = {
   interest:           maxN(interestDist),
   duration:           maxN(durationDist),
@@ -203,6 +197,17 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
   <main>
     <div class="admin-page">
 
+      <div class="mode-toggle">
+        <a href="/admin/survey" class={isTest ? '' : 'is-active'}>Données réelles</a>
+        <a href="/admin/survey?mode=test" class={isTest ? 'is-active' : ''}>Données test</a>
+      </div>
+
+      {isTest && (
+        <div class="test-banner">
+          <strong>Mode test</strong> — vous regardez {TEST_RESPONSES.length} réponses fictives, pas les vraies données.
+        </div>
+      )}
+
       <section class="admin-section">
         <h1 class="admin-title">Sondage</h1>
         <div class="admin-stats">
@@ -219,7 +224,7 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
             <div class="stat-label">English</div>
           </div>
           <div class="stat">
-            <div class="stat-value">{pct(highInterest.high, highInterest.total)}</div>
+            <div class="stat-value">{pct(highCount, total)}</div>
             <div class="stat-label">Intérêt ≥ 7/10</div>
           </div>
         </div>
@@ -238,7 +243,7 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
       {total > 0 && (
         <section class="admin-section">
           <h2 class="admin-subtitle">Validation de la demande</h2>
-          <p class="admin-meta">Score moyen : <strong>{highInterest.avg.toFixed(1)} / 10</strong> · {highInterest.high} sur {highInterest.total} ont un intérêt fort (≥ 7)</p>
+          <p class="admin-meta">Score moyen : <strong>{interestAvg.toFixed(1)} / 10</strong> · {highCount} sur {total} ont un intérêt fort (≥ 7)</p>
           <div class="dist">
             {interestDist.map(item => (
               <div class="dist-row">
@@ -429,7 +434,7 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
 
   <footer>
     <span>© 2026 Lacet</span>
-    <span class="footer-center">Admin</span>
+    <span class="footer-center">Admin{isTest && ' · Mode test'}</span>
     <span>lacet.ca</span>
   </footer>
 
