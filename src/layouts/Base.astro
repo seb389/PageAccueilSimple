@@ -530,9 +530,13 @@ const { title, lang, theme = 'dark' } = Astro.props;
     color: var(--craie);
     margin-bottom: 12px;
   }
-  .content-page ul {
+  .content-page ul,
+  .content-page ol {
     padding-left: 22px;
     margin-bottom: 16px;
+  }
+  .content-page ol li {
+    padding-left: 4px;
   }
   .content-page a {
     color: var(--cuivre);
