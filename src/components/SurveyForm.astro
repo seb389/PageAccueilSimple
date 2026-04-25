@@ -1,10 +1,12 @@
 ---
 import type { Lang } from '../i18n';
 import { survey, type Question } from '../survey';
+import { env } from 'cloudflare:workers';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const content = survey[lang];
+const turnstileSiteKey = env?.TURNSTILE_SITE_KEY ?? '';
 
 let globalIndex = 0;
 const numberedSections = content.sections.map(section => ({
@@ -197,6 +199,10 @@ const numberedSections = content.sections.map(section => ({
       </div>
     </section>
 
+    <div class="survey-captcha">
+      <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-size="flexible"></div>
+    </div>
+
     <p class="survey-error" role="alert" hidden></p>
 
     <div class="survey-submit-row">
@@ -208,6 +214,8 @@ const numberedSections = content.sections.map(section => ({
 
 </section>
 
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline></script>
+
 <script is:inline define:vars={{
   messages: {
     required:               content.errors.required,
@@ -217,6 +225,8 @@ const numberedSections = content.sections.map(section => ({
     consent_required:       content.errors.consent_required,
     contest_name_required:  lang === 'fr' ? "Veuillez entrer votre nom pour participer au concours." : "Please enter your name to enter the contest.",
     contest_rules_required: lang === 'fr' ? "Veuillez accepter le règlement du concours." : "Please accept the contest rules.",
+    captcha_missing:        lang === 'fr' ? "Veuillez patienter — la vérification anti-bot se charge." : "Please wait — the anti-bot check is loading.",
+    captcha_failed:         lang === 'fr' ? "Vérification anti-bot échouée. Rechargez la page et réessayez." : "Anti-bot verification failed. Please reload the page and try again.",
   },
   submitLabel: content.submit,
   submittingLabel: content.submitting,
@@ -319,6 +329,10 @@ const numberedSections = content.sections.map(section => ({
       data.contest_rules = true;
     }
 
+    const captchaToken = formData.get('cf-turnstile-response');
+    if (!captchaToken) throw new Error('captcha_missing');
+    data.captcha_token = String(captchaToken);
+
     return data;
   }
 
@@ -347,6 +361,8 @@ const numberedSections = content.sections.map(section => ({
         ctEmail.focus();
       } else if (msg === 'contest_rules_required') {
         showError(messages.contest_rules_required, ctRules.closest('.survey-contest'));
+      } else if (msg === 'captcha_missing') {
+        showError(messages.captcha_missing, form.querySelector('.survey-captcha'));
       } else {
         showError(messages.default);
       }
@@ -366,6 +382,12 @@ const numberedSections = content.sections.map(section => ({
       if (data.ok) {
         const redirect = lang === 'fr' ? '/merci-sondage' : '/en/thanks-survey';
         window.location.href = redirect;
+      } else if (data.error === 'captcha_failed') {
+        showError(messages.captcha_failed, form.querySelector('.survey-captcha'));
+        if (window.turnstile) window.turnstile.reset();
+        button.disabled = false;
+        btnLabel.textContent = submitLabel;
+        return;
       } else {
         showError(messages.default);
         button.disabled = false;

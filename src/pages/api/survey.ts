@@ -36,11 +36,50 @@ for (const section of content.sections) {
 
 const ALL_COLUMNS = Object.keys(fields);
 
+async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+  if (!token || !env?.TURNSTILE_SECRET_KEY) return false;
+  const formData = new FormData();
+  formData.append('secret', env.TURNSTILE_SECRET_KEY);
+  formData.append('response', token);
+  if (ip) formData.append('remoteip', ip);
+  try {
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json() as { success?: boolean; 'error-codes'?: string[] };
+    if (!data.success) {
+      console.warn('[turnstile] verification failed', data['error-codes']);
+    }
+    return data.success === true;
+  } catch (e) {
+    console.error('[turnstile] verify error', e);
+    return false;
+  }
+}
+
+async function hashIp(ip: string): Promise<string> {
+  const buf = new TextEncoder().encode(ip);
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 export const POST: APIRoute = async ({ request }) => {
   if (!env?.DB) return json({ ok: false, error: 'misconfigured' }, 500);
 
   let body: any;
   try { body = await request.json(); } catch { return json({ ok: false, error: 'invalid_body' }, 400); }
+
+  const clientIp = request.headers.get('cf-connecting-ip') ?? '';
+
+  // ── Captcha ──────────────────────────────────────────────────────
+  const captchaToken = typeof body.captcha_token === 'string' ? body.captcha_token : '';
+  const captchaOk = await verifyTurnstile(captchaToken, clientIp);
+  if (!captchaOk) {
+    return json({ ok: false, error: 'captcha_failed' }, 400);
+  }
 
   const lang = body.lang === 'en' ? 'en' : 'fr';
 
@@ -125,18 +164,26 @@ export const POST: APIRoute = async ({ request }) => {
     }
   }
 
-  // Optional: contest entry (best-effort, kept in a separate table — no link to survey response)
+  // Optional: contest entry (best-effort, kept in a separate table — no link to survey response).
+  // Enforces uniqueness on email AND on hashed IP via UNIQUE indexes.
+  // Duplicate entries are silently skipped — survey response still succeeds.
   if (body.contest_optin === true && body.contest_rules === true) {
     const name = typeof body.contest_name === 'string' ? body.contest_name.trim() : '';
     const cEmail = typeof body.contest_email === 'string' ? body.contest_email.trim().toLowerCase() : '';
     if (name && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cEmail)) {
       try {
+        const ipHash = clientIp ? await hashIp(clientIp) : null;
         await env.DB
-          .prepare('INSERT INTO contest_entries (lang, name, email, accepted_rules, ip_country) VALUES (?, ?, ?, 1, ?)')
-          .bind(lang, name, cEmail, ipCountry)
+          .prepare('INSERT INTO contest_entries (lang, name, email, accepted_rules, ip_country, ip_hash) VALUES (?, ?, ?, 1, ?, ?)')
+          .bind(lang, name, cEmail, ipCountry, ipHash)
           .run();
       } catch (e) {
-        console.error('[survey] contest insert failed', e);
+        const msg = String((e as Error)?.message ?? e);
+        if (msg.includes('UNIQUE constraint')) {
+          console.log('[contest] duplicate entry blocked (email or IP)');
+        } else {
+          console.error('[survey] contest insert failed', e);
+        }
       }
     }
   }

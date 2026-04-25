@@ -58,8 +58,10 @@ CREATE TABLE IF NOT EXISTS contest_entries (
   name            TEXT NOT NULL,
   email           TEXT NOT NULL,
   accepted_rules  INTEGER NOT NULL DEFAULT 1,
-  ip_country      TEXT
+  ip_country      TEXT,
+  ip_hash         TEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_contest_created_at ON contest_entries(created_at);
-CREATE INDEX IF NOT EXISTS idx_contest_email      ON contest_entries(email);
+CREATE INDEX        IF NOT EXISTS idx_contest_created_at      ON contest_entries(created_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_contest_email_unique    ON contest_entries(email);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_contest_ip_hash_unique  ON contest_entries(ip_hash) WHERE ip_hash IS NOT NULL;
