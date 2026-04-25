@@ -253,7 +253,11 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
         </div>
         <div class="admin-actions">
           <a href="/api/admin/export-csv" class="admin-button" download>
-            <span>Télécharger CSV complet</span>
+            <span>CSV simple</span>
+            <span aria-hidden="true">↓</span>
+          </a>
+          <a href="/api/admin/export-csv?format=expanded" class="admin-button" download title="Multi-choix éclatés en colonnes booléennes — idéal pour Excel">
+            <span>CSV éclaté (Excel)</span>
             <span aria-hidden="true">↓</span>
           </a>
         </div>
