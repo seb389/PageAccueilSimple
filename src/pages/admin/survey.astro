@@ -224,6 +224,7 @@ const priceDists: { [k: string]: { value: string; n: number }[] } = {};
 for (const k of PRICE_KEYS) priceDists[k] = orderByOptions(k, distSingle(allResponses, k));
 
 const durationDist = orderByOptions('duration', distSingle(allResponses, 'duration'));
+const rentalsDist = orderByOptions('rentals_per_season', distSingle(allResponses, 'rentals_per_season'));
 const multiBikeType = orderByOptions('bike_type', distMulti(allResponses, 'bike_type'));
 const multiContexts = orderByOptions('contexts', distMulti(allResponses, 'contexts'));
 
@@ -278,6 +279,7 @@ const maxes = {
   interest:           maxN(interestDist),
   nps:                maxN(npsDist),
   duration:           maxN(durationDist),
+  rentals:            maxN(rentalsDist),
   bikeType:           maxN(multiBikeType),
   contexts:           maxN(multiContexts),
   topService:         maxN(topService),
@@ -461,6 +463,19 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
                 <div class="dist-row">
                   <span class="dist-label">{labelFor('duration', item.value)}</span>
                   <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.duration)}%`}></div></div>
+                  <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="dist-group">
+            <h3 class="dist-group-title">Locations envisagées par saison</h3>
+            <div class="dist">
+              {rentalsDist.map(item => (
+                <div class="dist-row">
+                  <span class="dist-label">{labelFor('rentals_per_season', item.value)}</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.rentals)}%`}></div></div>
                   <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
                 </div>
               ))}

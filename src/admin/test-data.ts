@@ -17,6 +17,7 @@ export interface SurveyResponse {
   contexts: string;   // JSON-encoded array
   bike_type: string;  // JSON-encoded array
   duration: string;
+  rentals_per_season: string;
   price_week: string;
   price_month: string;
   price_season: string;
@@ -35,7 +36,7 @@ export interface SurveyResponse {
   comments: string | null;
 }
 
-type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type' | 'nps'> & {
+type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type' | 'nps' | 'rentals_per_season'> & {
   contexts: string[];
   bike_type: string[];
 };
@@ -423,12 +424,23 @@ function normalize(r: RawResponse): RawResponse {
   return { ...r, km_season: km === '5000_plus' ? 'over_5000' : km };
 }
 
+// Mapping plausible entre durée choisie et nombre de locations envisagées par saison
+const RENTALS_BY_DURATION: { [k: string]: string } = {
+  under_week: 'over_six',
+  one_week: 'four_six',
+  two_three_weeks: 'two_three',
+  one_month: 'two_three',
+  half_season: 'one',
+  full_season: 'continuous',
+};
+
 export const TEST_RESPONSES: SurveyResponse[] = RAW.map(normalize).map((r, i) => {
   const ts = new Date(BASE + i * 7 * HOUR);
   // NPS dérivé de l'intérêt avec petite variation déterministe pour diversité
   const npsBase = Math.max(0, r.interest - 1);
   const npsOffset = (i % 3) - 1; // -1, 0 ou 1
   const nps = Math.min(10, Math.max(0, npsBase + npsOffset));
+  const rentals_per_season = RENTALS_BY_DURATION[r.duration] ?? 'one';
   return {
     id: i + 1,
     created_at: ts.toISOString().replace('T', ' ').slice(0, 19),
@@ -439,6 +451,7 @@ export const TEST_RESPONSES: SurveyResponse[] = RAW.map(normalize).map((r, i) =>
     contexts: JSON.stringify(r.contexts),
     bike_type: JSON.stringify(r.bike_type),
     duration: r.duration,
+    rentals_per_season,
     price_week: r.price_week, price_month: r.price_month, price_season: r.price_season,
     val_delivery: r.val_delivery, val_bikefit: r.val_bikefit, val_maintenance: r.val_maintenance,
     val_insurance: r.val_insurance, val_exchange: r.val_exchange, val_coaching: r.val_coaching,

@@ -194,6 +194,10 @@ const title = response ? `LACET · Réponse #${response.id}` : 'LACET · Répons
                 <dt>Durée de location préférée</dt>
                 <dd>{labelFor('duration', response.duration)}</dd>
               </div>
+              <div class="detail-row">
+                <dt>Locations envisagées par saison</dt>
+                <dd>{labelFor('rentals_per_season', response.rentals_per_season)}</dd>
+              </div>
             </dl>
           </section>
 

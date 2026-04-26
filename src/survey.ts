@@ -217,6 +217,17 @@ const FR: SurveyContent = {
             { value: "full_season",       label: "Une saison complète (avril à octobre)" },
           ],
         },
+        {
+          key: "rentals_per_season", type: "radio", required: true,
+          label: "Selon la durée choisie ci-dessus, combien de locations envisageriez-vous au total par saison ?",
+          options: [
+            { value: "one",         label: "Une seule" },
+            { value: "two_three",   label: "2 à 3" },
+            { value: "four_six",    label: "4 à 6" },
+            { value: "over_six",    label: "Plus de 6" },
+            { value: "continuous",  label: "Une location continue de toute la saison" },
+          ],
+        },
       ],
     },
     {
@@ -509,6 +520,17 @@ const EN: SurveyContent = {
             { value: "one_month",         label: "One month" },
             { value: "half_season",       label: "Half a season (2 to 3 months)" },
             { value: "full_season",       label: "A full season (April to October)" },
+          ],
+        },
+        {
+          key: "rentals_per_season", type: "radio", required: true,
+          label: "Based on the duration chosen above, how many rentals would you consider in total per season?",
+          options: [
+            { value: "one",         label: "Just one" },
+            { value: "two_three",   label: "2 to 3" },
+            { value: "four_six",    label: "4 to 6" },
+            { value: "over_six",    label: "More than 6" },
+            { value: "continuous",  label: "One continuous rental for the whole season" },
           ],
         },
       ],

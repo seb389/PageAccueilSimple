@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   contexts         TEXT NOT NULL,
   bike_type        TEXT NOT NULL,
   duration         TEXT NOT NULL,
+  rentals_per_season TEXT NOT NULL,
 
   -- Section 4 - Prix
   price_week       TEXT NOT NULL,
