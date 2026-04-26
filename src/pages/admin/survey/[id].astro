@@ -247,6 +247,19 @@ const title = response ? `LACET · Réponse #${response.id}` : 'LACET · Répons
             <h2 class="admin-subtitle">Frein et commentaires</h2>
             <dl class="detail-list">
               <div class="detail-row">
+                <dt>Recommandation (NPS)</dt>
+                <dd>
+                  {typeof response.nps === 'number' ? (
+                    <>
+                      <strong>{response.nps} / 10</strong>
+                      {response.nps >= 9 && <span class="detail-tag tone-essential">Promoteur</span>}
+                      {response.nps >= 7 && response.nps < 9 && <span class="detail-tag tone-low">Passif</span>}
+                      {response.nps < 7 && <span class="detail-tag" style="background:#c45050;color:#fff;border-color:#c45050;">Détracteur</span>}
+                    </>
+                  ) : <span class="muted">—</span>}
+                </dd>
+              </div>
+              <div class="detail-row">
                 <dt>Principal frein</dt>
                 <dd>{labelFor('main_concern', response.main_concern)}</dd>
               </div>

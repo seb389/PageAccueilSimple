@@ -30,11 +30,12 @@ export interface SurveyResponse {
   val_purchase: string;
   val_routes: string;
   top_service: string;
+  nps: number | null;
   main_concern: string;
   comments: string | null;
 }
 
-type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type'> & {
+type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type' | 'nps'> & {
   contexts: string[];
   bike_type: string[];
 };
@@ -424,6 +425,10 @@ function normalize(r: RawResponse): RawResponse {
 
 export const TEST_RESPONSES: SurveyResponse[] = RAW.map(normalize).map((r, i) => {
   const ts = new Date(BASE + i * 7 * HOUR);
+  // NPS dérivé de l'intérêt avec petite variation déterministe pour diversité
+  const npsBase = Math.max(0, r.interest - 1);
+  const npsOffset = (i % 3) - 1; // -1, 0 ou 1
+  const nps = Math.min(10, Math.max(0, npsBase + npsOffset));
   return {
     id: i + 1,
     created_at: ts.toISOString().replace('T', ' ').slice(0, 19),
@@ -438,7 +443,9 @@ export const TEST_RESPONSES: SurveyResponse[] = RAW.map(normalize).map((r, i) =>
     val_delivery: r.val_delivery, val_bikefit: r.val_bikefit, val_maintenance: r.val_maintenance,
     val_insurance: r.val_insurance, val_exchange: r.val_exchange, val_coaching: r.val_coaching,
     val_equipment: r.val_equipment, val_purchase: r.val_purchase, val_routes: r.val_routes,
-    top_service: r.top_service, main_concern: r.main_concern,
+    top_service: r.top_service,
+    nps,
+    main_concern: r.main_concern,
     comments: r.comments,
   };
 });

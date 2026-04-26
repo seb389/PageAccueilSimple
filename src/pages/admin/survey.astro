@@ -192,6 +192,31 @@ const intCounts: { [k: number]: number } = {};
 for (const r of allResponses) intCounts[r.interest] = (intCounts[r.interest] ?? 0) + 1;
 const interestDist = Array.from({ length: 10 }, (_, i) => ({ value: i + 1, n: intCounts[i + 1] ?? 0 }));
 
+// ─── NPS (Net Promoter Score) ─────────────────────────────────────────
+// Promoteurs : 9-10, Passifs : 7-8, Détracteurs : 0-6
+// NPS = % promoteurs − % détracteurs
+let npsSum = 0;
+let npsCount = 0;
+let promoters = 0;
+let passives = 0;
+let detractors = 0;
+const npsCounts: { [k: number]: number } = {};
+for (const r of allResponses) {
+  if (typeof r.nps === 'number') {
+    npsCounts[r.nps] = (npsCounts[r.nps] ?? 0) + 1;
+    npsSum += r.nps;
+    npsCount++;
+    if (r.nps >= 9) promoters++;
+    else if (r.nps >= 7) passives++;
+    else detractors++;
+  }
+}
+const npsAvg = npsCount > 0 ? npsSum / npsCount : 0;
+const npsScore = npsCount > 0
+  ? Math.round((promoters / npsCount) * 100) - Math.round((detractors / npsCount) * 100)
+  : 0;
+const npsDist = Array.from({ length: 11 }, (_, i) => ({ value: i, n: npsCounts[i] ?? 0 }));
+
 const profileDists: { [k: string]: { value: string; n: number }[] } = {};
 for (const k of PROFILE_KEYS) profileDists[k] = orderByOptions(k, distSingle(allResponses, k));
 
@@ -251,6 +276,7 @@ function previewComment(c: string | null): string {
 // Pre-compute max per distribution
 const maxes = {
   interest:           maxN(interestDist),
+  nps:                maxN(npsDist),
   duration:           maxN(durationDist),
   bikeType:           maxN(multiBikeType),
   contexts:           maxN(multiContexts),
@@ -345,6 +371,45 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
                 <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, total)})</span></span>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {total > 0 && npsCount > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Recommandation (NPS)</h2>
+          <p class="admin-meta">
+            Score moyen : <strong>{npsAvg.toFixed(1)} / 10</strong> ·
+            <strong class={`nps-score ${npsScore >= 50 ? 'is-excellent' : npsScore >= 0 ? 'is-good' : 'is-poor'}`}>NPS&nbsp;: {npsScore > 0 ? '+' : ''}{npsScore}</strong>
+          </p>
+          <div class="nps-segments">
+            <div class="nps-segment is-promoter">
+              <div class="nps-segment-pct">{npsCount > 0 ? Math.round((promoters / npsCount) * 100) : 0}%</div>
+              <div class="nps-segment-label">Promoteurs (9-10)</div>
+              <div class="nps-segment-count">{promoters} / {npsCount}</div>
+            </div>
+            <div class="nps-segment is-passive">
+              <div class="nps-segment-pct">{npsCount > 0 ? Math.round((passives / npsCount) * 100) : 0}%</div>
+              <div class="nps-segment-label">Passifs (7-8)</div>
+              <div class="nps-segment-count">{passives} / {npsCount}</div>
+            </div>
+            <div class="nps-segment is-detractor">
+              <div class="nps-segment-pct">{npsCount > 0 ? Math.round((detractors / npsCount) * 100) : 0}%</div>
+              <div class="nps-segment-label">Détracteurs (0-6)</div>
+              <div class="nps-segment-count">{detractors} / {npsCount}</div>
+            </div>
+          </div>
+          <div class="dist">
+            {npsDist.map(item => {
+              const tone = item.value >= 9 ? 'is-promoter' : item.value >= 7 ? 'is-passive' : 'is-detractor';
+              return (
+                <div class={`dist-row nps-row ${tone}`}>
+                  <span class="dist-label">{item.value}/10</span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(item.n, maxes.nps)}%`}></div></div>
+                  <span class="dist-count">{item.n} <span class="dist-pct">({pct(item.n, npsCount)})</span></span>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

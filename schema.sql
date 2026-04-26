@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   top_service      TEXT NOT NULL,
 
   -- Section 6 - Freins & commentaires
+  nps              INTEGER,
   main_concern     TEXT NOT NULL,
   comments         TEXT
 );

@@ -885,6 +885,53 @@ const { title, lang, theme = 'dark' } = Astro.props;
     outline: none;
   }
 
+  /* NPS visualization */
+  .nps-score.is-excellent { color: #2a9d4a; }
+  .nps-score.is-good      { color: var(--cuivre); }
+  .nps-score.is-poor      { color: #c45050; }
+
+  .nps-segments {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 20px 0 28px;
+  }
+  .nps-segment {
+    padding: 18px 16px;
+    border: 1px solid var(--line);
+    border-left-width: 4px;
+  }
+  .nps-segment.is-promoter  { border-left-color: #2a9d4a; }
+  .nps-segment.is-passive   { border-left-color: var(--fumee); }
+  .nps-segment.is-detractor { border-left-color: #c45050; }
+
+  .nps-segment-pct {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--craie);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .nps-segment.is-promoter  .nps-segment-pct { color: #2a9d4a; }
+  .nps-segment.is-detractor .nps-segment-pct { color: #c45050; }
+  .nps-segment-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fumee);
+    margin-bottom: 4px;
+  }
+  .nps-segment-count {
+    font-size: 11px;
+    color: var(--fumee);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* NPS row colors in distribution */
+  .nps-row.is-promoter  .dist-fill { background: #2a9d4a; }
+  .nps-row.is-detractor .dist-fill { background: #c45050; }
+
   /* Mode toggle (admin) */
   .mode-toggle {
     display: inline-flex;
@@ -1243,7 +1290,8 @@ const { title, lang, theme = 'dark' } = Astro.props;
   }
   .scale-track {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     gap: 4px;
     margin-bottom: 10px;
   }

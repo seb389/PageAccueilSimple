@@ -311,6 +311,13 @@ const FR: SurveyContent = {
       title: "Freins et commentaires",
       questions: [
         {
+          key: "nps", type: "scale", required: true,
+          label: "Sur une échelle de 0 à 10, à quel point recommanderiez-vous ce service à un·e ami·e cycliste ?",
+          min: 0, max: 10,
+          minLabel: "Pas du tout probable",
+          maxLabel: "Extrêmement probable",
+        },
+        {
           key: "main_concern", type: "radio", required: true,
           label: "Votre principal frein à utiliser ce service ?",
           options: [
@@ -597,6 +604,13 @@ const EN: SurveyContent = {
       id: "s6",
       title: "Concerns and comments",
       questions: [
+        {
+          key: "nps", type: "scale", required: true,
+          label: "On a scale of 0 to 10, how likely are you to recommend this service to a cyclist friend?",
+          min: 0, max: 10,
+          minLabel: "Not at all likely",
+          maxLabel: "Extremely likely",
+        },
         {
           key: "main_concern", type: "radio", required: true,
           label: "Your main concern about using this service?",
