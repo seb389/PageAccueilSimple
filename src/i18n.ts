@@ -55,9 +55,43 @@ export const ui = {
     thanks_back:        '← Retour à l\'accueil',
 
     // Page merci sondage
-    thanks_survey_title: 'Merci !',
-    thanks_survey_body:  'Votre contribution nous aide à construire un service pensé pour les cyclistes d\'ici. Nous publierons les grandes tendances du sondage dans les prochains mois.',
+    thanks_survey_title: 'Merci, vraiment.',
+    thanks_survey_body:  'Chaque réponse au sondage nous aide à bâtir un service de location de vélos de route à la hauteur des cyclistes d\'ici. Le vôtre comptera dans les décisions qu\'on prendra dans les prochains mois.',
+    thanks_survey_signoff: '— L\'équipe Lacet',
     thanks_survey_back:  '← Retour à l\'accueil',
+
+    // Bloc concours
+    thanks_contest_title: 'Vous êtes inscrit·e au tirage 🎯',
+    thanks_contest_body:  'Vous courez la chance de gagner un',
+    thanks_contest_prize: 'Garmin Varia RearVue 820',
+    thanks_contest_value: 'd\'une valeur de 419,99 $.',
+    thanks_contest_draw_label: 'Tirage : lundi 8 juin 2026.',
+    thanks_contest_draw_body: 'Si vous êtes la personne sélectionnée, nous vous écrirons à l\'adresse courriel fournie dans les sept jours suivant le tirage.',
+    thanks_contest_luck:  'Bonne chance — et bonnes routes d\'ici là.',
+    thanks_contest_rules: 'Consulter le règlement complet',
+    thanks_contest_rules_href: '/concours-reglement',
+
+    // Bloc infolettre
+    thanks_nl_title: 'Vous recevrez nos prochaines nouvelles 📬',
+    thanks_nl_body:  'Vous serez parmi les premier·ère·s informé·e·s lors de l\'ouverture du service. Pas de spam, jamais — seulement les annonces qui comptent.',
+
+    // Bloc partage
+    thanks_share_title: 'Connaissez un·e ami·e cycliste ?',
+    thanks_share_body:  'Plus on a de réponses, plus le service qu\'on bâtira sera juste. Partager le sondage prend dix secondes et fait une vraie différence.',
+    thanks_share_facebook: 'Partager sur Facebook',
+    thanks_share_sms:      'Partager par texto',
+    thanks_share_email:    'Partager par courriel',
+    thanks_share_url:      'https://www.lacet.ca/sondage',
+    thanks_share_sms_body: 'Salut! Lacet prépare un service de location de vélos de route haut de gamme au Québec. Ils sondent les cyclistes pour peaufiner le projet — et il y a un concours pour gagner un Garmin Varia 820 : https://www.lacet.ca/sondage',
+    thanks_share_mail_subject: 'Sondage Lacet — vélos de route haut de gamme au Québec',
+    thanks_share_mail_body: 'Salut!\n\nJe viens de répondre à un sondage pour Lacet, un projet québécois de location de vélos de route haut de gamme. Ça prend 3 minutes et il y a un concours pour gagner un Garmin Varia 820 (419 $).\n\nVoici le lien : https://www.lacet.ca/sondage\n\nBonne route!',
+
+    // Bloc suivre
+    thanks_follow_title: 'Suivez le projet',
+    thanks_follow_body:  'On va publier la synthèse des grandes tendances du sondage cet été, et tenir au courant ceux et celles qui suivent Lacet de l\'évolution du projet.',
+    thanks_follow_facebook: 'Facebook',
+    thanks_follow_facebook_href: 'https://www.facebook.com/lacet.ca',
+    thanks_follow_soon: '(Instagram et Strava à venir)',
 
     // Politique de confidentialité
     privacy_title:      'Politique de confidentialité',
@@ -117,9 +151,43 @@ export const ui = {
     thanks_back:        '← Back to home',
 
     // Survey thanks page
-    thanks_survey_title: 'Thank you!',
-    thanks_survey_body:  'Your input helps us build a service made for cyclists here. We will publish the main findings of the survey in the coming months.',
+    thanks_survey_title: 'Thank you, sincerely.',
+    thanks_survey_body:  'Every response to the survey helps us build a road bike rental service that lives up to local cyclists\' expectations. Yours will count in the decisions we make over the coming months.',
+    thanks_survey_signoff: '— The Lacet team',
     thanks_survey_back:  '← Back to home',
+
+    // Contest block
+    thanks_contest_title: 'You\'re entered in the draw 🎯',
+    thanks_contest_body:  'You have a chance to win a',
+    thanks_contest_prize: 'Garmin Varia RearVue 820',
+    thanks_contest_value: 'with a retail value of $419.99.',
+    thanks_contest_draw_label: 'Draw date: Monday, June 8, 2026.',
+    thanks_contest_draw_body: 'If you\'re the selected person, we\'ll email you at the address you provided within seven days of the draw.',
+    thanks_contest_luck:  'Good luck — and enjoy the rides until then.',
+    thanks_contest_rules: 'Read the full rules',
+    thanks_contest_rules_href: '/en/contest-rules',
+
+    // Newsletter block
+    thanks_nl_title: 'You\'ll hear from us 📬',
+    thanks_nl_body:  'You\'ll be among the first to know when the service launches. No spam, ever — only the announcements that matter.',
+
+    // Sharing block
+    thanks_share_title: 'Know a fellow cyclist?',
+    thanks_share_body:  'The more responses we get, the better the service will fit real needs. Sharing the survey takes ten seconds and makes a real difference.',
+    thanks_share_facebook: 'Share on Facebook',
+    thanks_share_sms:      'Share by text',
+    thanks_share_email:    'Share by email',
+    thanks_share_url:      'https://www.lacet.ca/en/sondage',
+    thanks_share_sms_body: 'Hey! Lacet is building a premium road bike rental service in Quebec. They\'re surveying cyclists to refine the project — and there\'s a contest to win a Garmin Varia 820: https://www.lacet.ca/en/sondage',
+    thanks_share_mail_subject: 'Lacet survey — premium road bikes in Quebec',
+    thanks_share_mail_body: 'Hi!\n\nI just answered a survey for Lacet, a Quebec-based project for premium road bike rentals. Takes 3 minutes and there\'s a contest to win a Garmin Varia 820 ($419).\n\nHere\'s the link: https://www.lacet.ca/en/sondage\n\nRide safe!',
+
+    // Follow block
+    thanks_follow_title: 'Follow the project',
+    thanks_follow_body:  'We\'ll publish the survey\'s key findings this summer, and keep our followers updated on the project\'s progress.',
+    thanks_follow_facebook: 'Facebook',
+    thanks_follow_facebook_href: 'https://www.facebook.com/lacet.ca',
+    thanks_follow_soon: '(Instagram and Strava coming soon)',
 
     // Privacy policy
     privacy_title:      'Privacy Policy',

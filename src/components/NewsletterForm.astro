@@ -89,11 +89,17 @@ const tr = useTranslations(lang);
     button.disabled = true;
     btnLabel.textContent = messages.loading;
 
+    // Tracking consent + shared event_id for CAPI dedup
+    var consentRaw = '';
+    try { consentRaw = localStorage.getItem('lacet_consent_v1') || ''; } catch (e) {}
+    var trackingConsent = consentRaw.indexOf('accepted:') === 0 ? 'accepted' : 'declined';
+    var eventId = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email, consent: true, lang, source: 'home' }),
+        body: JSON.stringify({ email, consent: true, lang, source: 'home', tracking_consent: trackingConsent, event_id: eventId }),
       });
       const data = await res.json().catch(() => ({ ok: false, error: 'service_error' }));
 

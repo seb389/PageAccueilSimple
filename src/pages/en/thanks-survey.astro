@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import SurveyThanks from '../../components/SurveyThanks.astro';
 import { useTranslations } from '../../i18n';
 const tr = useTranslations('en');
 ---
@@ -17,14 +18,11 @@ const tr = useTranslations('en');
     </nav>
   </header>
 
-  <main class="centered">
-    <div class="content-page">
-      <div class="big-center">
-        <h1>{tr.thanks_survey_title}</h1>
-        <p>{tr.thanks_survey_body}</p>
-        <a href="/en/" class="home-link">{tr.thanks_survey_back}</a>
-      </div>
-    </div>
+  <main>
+    <SurveyThanks lang="en" />
+    <p class="thanks-back-wrap">
+      <a href="/en/" class="home-link">{tr.thanks_survey_back}</a>
+    </p>
   </main>
 
   <footer>

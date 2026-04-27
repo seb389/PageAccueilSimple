@@ -5,6 +5,10 @@ interface Props {
   theme?: 'dark' | 'light';
 }
 const { title, lang, theme = 'dark' } = Astro.props;
+
+// Meta Pixel — Pixel ID is injected at build time via PUBLIC_META_PIXEL_ID env var.
+// Empty = pixel + consent banner are disabled entirely.
+const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
 ---
 <!DOCTYPE html>
 <html lang={lang} data-theme={theme}>
@@ -577,6 +581,137 @@ const { title, lang, theme = 'dark' } = Astro.props;
     border-color: var(--craie);
   }
 
+  /* ── Page merci sondage ── */
+  .thanks-page {
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px 0;
+    animation: fadeUp 1.2s 0.3s ease-out both;
+  }
+  .thanks-hero {
+    text-align: center;
+    padding: 56px 0 48px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 40px;
+  }
+  .thanks-hero h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--craie);
+    margin-bottom: 20px;
+  }
+  .thanks-hero p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--craie);
+    max-width: 520px;
+    margin: 0 auto 14px;
+  }
+  .thanks-hero .thanks-signoff {
+    color: var(--fumee);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    font-style: italic;
+    margin-top: 18px;
+  }
+  .thanks-block {
+    margin: 0 0 40px;
+    padding: 0 4px;
+  }
+  .thanks-block h2 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--craie);
+    margin: 0 0 14px;
+  }
+  .thanks-block p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--craie);
+    margin-bottom: 12px;
+  }
+  .thanks-block a {
+    color: var(--cuivre);
+    text-decoration: underline;
+    text-decoration-color: rgba(182, 106, 62, 0.4);
+    text-underline-offset: 2px;
+  }
+  .thanks-block a:hover {
+    text-decoration-color: var(--cuivre);
+  }
+  .thanks-contest {
+    background: rgba(182, 106, 62, 0.06);
+    border: 1px solid rgba(182, 106, 62, 0.18);
+    border-radius: 4px;
+    padding: 24px 24px 16px;
+  }
+  .thanks-contest .thanks-contest-luck {
+    color: var(--fumee);
+  }
+  .thanks-newsletter {
+    border-left: 2px solid var(--line);
+    padding-left: 18px;
+  }
+  .thanks-share-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .thanks-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    color: var(--craie);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    background: transparent;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .thanks-share-btn:hover {
+    border-color: var(--cuivre);
+    color: var(--cuivre);
+    background: rgba(182, 106, 62, 0.04);
+    text-decoration: none;
+  }
+  .thanks-share-icon {
+    font-size: 15px;
+  }
+  .thanks-follow-soon {
+    color: var(--fumee);
+    font-size: 13px;
+  }
+  .thanks-back-wrap {
+    text-align: center;
+    margin: 24px 0 32px;
+  }
+  .thanks-back-wrap .home-link {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fumee);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 3px;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  .thanks-back-wrap .home-link:hover {
+    color: var(--craie);
+    border-color: var(--craie);
+  }
+  @media (max-width: 540px) {
+    .thanks-share-buttons { flex-direction: column; }
+    .thanks-share-btn { justify-content: center; }
+  }
+
   /* ── Admin pages ── */
   .admin-page {
     width: 100%;
@@ -883,6 +1018,83 @@ const { title, lang, theme = 'dark' } = Astro.props;
     color: #fff;
     background: #c45050;
     outline: none;
+  }
+
+  /* Cookie consent banner */
+  .consent-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #0f0f0f;
+    color: #f4f1ec;
+    border-top: 1px solid rgba(244, 241, 236, 0.15);
+    padding: 16px 20px;
+    font-family: "Inter", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    animation: consentSlide 0.3s ease-out;
+  }
+  @keyframes consentSlide {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .consent-banner-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .consent-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(244, 241, 236, 0.85);
+    flex: 1;
+    min-width: 240px;
+  }
+  .consent-text a {
+    color: #b66a3e;
+    text-decoration: underline;
+    text-decoration-color: rgba(182, 106, 62, 0.4);
+    text-underline-offset: 2px;
+  }
+  .consent-text a:hover { text-decoration-color: #b66a3e; }
+  .consent-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .consent-btn {
+    padding: 10px 22px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid rgba(244, 241, 236, 0.25);
+    background: transparent;
+    color: #f4f1ec;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .consent-btn:hover { border-color: #f4f1ec; }
+  .consent-btn-primary {
+    background: #f4f1ec;
+    color: #0f0f0f;
+    border-color: #f4f1ec;
+  }
+  .consent-btn-primary:hover {
+    background: #b66a3e;
+    border-color: #b66a3e;
+    color: #f4f1ec;
+  }
+  @media (max-width: 640px) {
+    .consent-banner-inner { flex-direction: column; align-items: stretch; }
+    .consent-actions { justify-content: stretch; }
+    .consent-btn { flex: 1; padding: 12px; }
   }
 
   /* NPS visualization */
@@ -1566,5 +1778,99 @@ const { title, lang, theme = 'dark' } = Astro.props;
 </head>
 <body>
   <slot />
+
+  {pixelId && (
+    <script is:inline define:vars={{ pixelId, lang }}>
+      (function () {
+        var KEY = 'lacet_consent_v1';
+
+        function initPixel() {
+          if (window.fbq) return;
+          !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+          window.fbq('init', pixelId);
+          window.fbq('track', 'PageView');
+          var queue = window.__lacetEventQueue || [];
+          queue.forEach(function (q) { window.fbq('track', q.event, q.params, q.opts); });
+          window.__lacetEventQueue = [];
+        }
+
+        // Public helper: queue or fire events. eventId enables CAPI dedup.
+        window.lacetTrack = function (event, params, eventId) {
+          var opts = eventId ? { eventID: eventId } : undefined;
+          if (window.fbq) {
+            window.fbq('track', event, params || undefined, opts);
+          } else {
+            window.__lacetEventQueue = window.__lacetEventQueue || [];
+            window.__lacetEventQueue.push({ event: event, params: params, opts: opts });
+          }
+        };
+
+        function hideBanner() {
+          var b = document.getElementById('consent-banner');
+          if (b) b.remove();
+        }
+
+        window.lacetConsent = {
+          accept: function () {
+            try { localStorage.setItem(KEY, 'accepted:' + Date.now()); } catch (e) {}
+            hideBanner();
+            initPixel();
+          },
+          decline: function () {
+            try { localStorage.setItem(KEY, 'declined:' + Date.now()); } catch (e) {}
+            hideBanner();
+          },
+          reset: function () {
+            try { localStorage.removeItem(KEY); } catch (e) {}
+            location.reload();
+          },
+        };
+
+        function showBanner() {
+          var fr = lang === 'fr';
+          var html =
+            '<div class="consent-banner-inner">' +
+              '<p class="consent-text">' +
+                (fr
+                  ? 'Lacet utilise des outils de mesure publicitaire de Meta. Acceptez-vous le dépôt de cookies à cette fin&nbsp;? '
+                  : 'Lacet uses Meta advertising measurement tools. Do you accept cookies for this purpose? ') +
+                '<a href="' + (fr ? '/confidentialite' : '/en/privacy') + '">' +
+                (fr ? 'En savoir plus' : 'Learn more') +
+                '</a>' +
+              '</p>' +
+              '<div class="consent-actions">' +
+                '<button type="button" class="consent-btn" onclick="window.lacetConsent.decline()">' +
+                  (fr ? 'Refuser' : 'Decline') +
+                '</button>' +
+                '<button type="button" class="consent-btn consent-btn-primary" onclick="window.lacetConsent.accept()">' +
+                  (fr ? 'Accepter' : 'Accept') +
+                '</button>' +
+              '</div>' +
+            '</div>';
+          var div = document.createElement('div');
+          div.id = 'consent-banner';
+          div.className = 'consent-banner';
+          div.setAttribute('role', 'dialog');
+          div.setAttribute('aria-label', fr ? 'Consentement aux cookies' : 'Cookie consent');
+          div.innerHTML = html;
+          document.body.appendChild(div);
+        }
+
+        // Initialize on load
+        var consent = '';
+        try { consent = localStorage.getItem(KEY) || ''; } catch (e) {}
+
+        if (consent.indexOf('accepted:') === 0) {
+          initPixel();
+        } else if (!consent) {
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', showBanner);
+          } else {
+            showBanner();
+          }
+        }
+      })();
+    </script>
+  )}
 </body>
 </html>

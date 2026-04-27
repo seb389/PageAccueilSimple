@@ -1,0 +1,96 @@
+---
+import { useTranslations, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const tr = useTranslations(lang);
+
+const shareUrlEnc      = encodeURIComponent(tr.thanks_share_url);
+const shareSmsBodyEnc  = encodeURIComponent(tr.thanks_share_sms_body);
+const shareMailSubjEnc = encodeURIComponent(tr.thanks_share_mail_subject);
+const shareMailBodyEnc = encodeURIComponent(tr.thanks_share_mail_body);
+
+const fbShareHref   = `https://www.facebook.com/sharer/sharer.php?u=${shareUrlEnc}`;
+const smsShareHref  = `sms:?body=${shareSmsBodyEnc}`;
+const mailShareHref = `mailto:?subject=${shareMailSubjEnc}&body=${shareMailBodyEnc}`;
+---
+
+<div class="thanks-page">
+  <section class="thanks-hero">
+    <h1>{tr.thanks_survey_title}</h1>
+    <p>{tr.thanks_survey_body}</p>
+    <p class="thanks-signoff">{tr.thanks_survey_signoff}</p>
+  </section>
+
+  <section class="thanks-block thanks-contest" data-block="contest" hidden>
+    <h2>{tr.thanks_contest_title}</h2>
+    <p>
+      {tr.thanks_contest_body} <strong>{tr.thanks_contest_prize}</strong> {tr.thanks_contest_value}
+    </p>
+    <p>
+      <strong>{tr.thanks_contest_draw_label}</strong> {tr.thanks_contest_draw_body}
+    </p>
+    <p class="thanks-contest-luck"><em>{tr.thanks_contest_luck}</em></p>
+    <p>
+      <a href={tr.thanks_contest_rules_href}>{tr.thanks_contest_rules}</a>
+    </p>
+  </section>
+
+  <section class="thanks-block thanks-newsletter" data-block="newsletter" hidden>
+    <h2>{tr.thanks_nl_title}</h2>
+    <p>{tr.thanks_nl_body}</p>
+  </section>
+
+  <section class="thanks-block thanks-share">
+    <h2>{tr.thanks_share_title}</h2>
+    <p>{tr.thanks_share_body}</p>
+    <div class="thanks-share-buttons">
+      <a class="thanks-share-btn" href={fbShareHref} target="_blank" rel="noopener" data-share="facebook">
+        <span class="thanks-share-icon" aria-hidden="true">📘</span>
+        <span>{tr.thanks_share_facebook}</span>
+      </a>
+      <a class="thanks-share-btn" href={smsShareHref} data-share="sms">
+        <span class="thanks-share-icon" aria-hidden="true">💬</span>
+        <span>{tr.thanks_share_sms}</span>
+      </a>
+      <a class="thanks-share-btn" href={mailShareHref} data-share="email">
+        <span class="thanks-share-icon" aria-hidden="true">✉️</span>
+        <span>{tr.thanks_share_email}</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="thanks-block thanks-follow">
+    <h2>{tr.thanks_follow_title}</h2>
+    <p>{tr.thanks_follow_body}</p>
+    <p>
+      <a href={tr.thanks_follow_facebook_href} target="_blank" rel="noopener">{tr.thanks_follow_facebook}</a>
+      <span class="thanks-follow-soon"> · {tr.thanks_follow_soon}</span>
+    </p>
+  </section>
+</div>
+
+<script is:inline>
+  (function () {
+    var qs = new URLSearchParams(window.location.search);
+    if (qs.get('concours') === '1' || qs.get('contest') === '1') {
+      var c = document.querySelector('[data-block="contest"]');
+      if (c) c.hidden = false;
+    }
+    if (qs.get('infolettre') === '1' || qs.get('newsletter') === '1') {
+      var n = document.querySelector('[data-block="newsletter"]');
+      if (n) n.hidden = false;
+    }
+
+    var btns = document.querySelectorAll('.thanks-share-btn');
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (window.lacetTrack) {
+          window.lacetTrack('Share', { method: btn.getAttribute('data-share'), content_category: 'survey' });
+        }
+      });
+    });
+  })();
+</script>

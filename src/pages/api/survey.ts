@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { survey } from '../../survey';
+import { sendMetaCapiEvent } from '../../lib/meta-capi';
 
 export const prerender = false;
 
@@ -167,16 +168,20 @@ export const POST: APIRoute = async ({ request }) => {
   // Optional: contest entry (best-effort, kept in a separate table — no link to survey response).
   // Enforces uniqueness on email AND on hashed IP via UNIQUE indexes.
   // Duplicate entries are silently skipped — survey response still succeeds.
+  let contestInserted = false;
+  let contestName = '';
+  let contestEmail = '';
   if (body.contest_optin === true && body.contest_rules === true) {
-    const name = typeof body.contest_name === 'string' ? body.contest_name.trim() : '';
-    const cEmail = typeof body.contest_email === 'string' ? body.contest_email.trim().toLowerCase() : '';
-    if (name && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cEmail)) {
+    contestName = typeof body.contest_name === 'string' ? body.contest_name.trim() : '';
+    contestEmail = typeof body.contest_email === 'string' ? body.contest_email.trim().toLowerCase() : '';
+    if (contestName && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contestEmail)) {
       try {
         const ipHash = clientIp ? await hashIp(clientIp) : null;
         await env.DB
           .prepare('INSERT INTO contest_entries (lang, name, email, accepted_rules, ip_country, ip_hash) VALUES (?, ?, ?, 1, ?, ?)')
-          .bind(lang, name, cEmail, ipCountry, ipHash)
+          .bind(lang, contestName, contestEmail, ipCountry, ipHash)
           .run();
+        contestInserted = true;
       } catch (e) {
         const msg = String((e as Error)?.message ?? e);
         if (msg.includes('UNIQUE constraint')) {
@@ -186,6 +191,26 @@ export const POST: APIRoute = async ({ request }) => {
         }
       }
     }
+  }
+
+  // Meta CAPI : fire Lead conversion (server-side, deduped with browser via event_id)
+  // Only when contest opt-in succeeded AND user accepted tracking consent.
+  if (contestInserted && body.tracking_consent === 'accepted') {
+    const eventId = typeof body.event_id === 'string' ? body.event_id : undefined;
+    const [firstName, ...rest] = contestName.split(/\s+/);
+    const lastName = rest.join(' ') || undefined;
+    const sondagePath = lang === 'fr' ? '/sondage' : '/en/sondage';
+    await sendMetaCapiEvent({
+      eventName: 'Lead',
+      eventId,
+      email: contestEmail,
+      firstName,
+      lastName,
+      ip: clientIp || undefined,
+      userAgent: request.headers.get('user-agent') || undefined,
+      eventSourceUrl: env.SITE_URL ? env.SITE_URL + sondagePath : undefined,
+      customData: { content_category: 'survey' },
+    });
   }
 
   return json({ ok: true }, 200);

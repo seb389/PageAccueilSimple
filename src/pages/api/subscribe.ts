@@ -11,7 +11,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: 'misconfigured' }, 500);
   }
 
-  let body: { email?: string; consent?: boolean; lang?: string; source?: string };
+  let body: { email?: string; consent?: boolean; lang?: string; source?: string; tracking_consent?: string; event_id?: string };
   try {
     body = await request.json();
   } catch {
@@ -22,6 +22,8 @@ export const POST: APIRoute = async ({ request }) => {
   const consent = body.consent === true;
   const lang    = body.lang === 'en' ? 'en' : 'fr';
   const source  = body.source === 'survey' ? 'survey' : 'home';
+  const trackingConsent = body.tracking_consent === 'accepted' ? 'accepted' : 'declined';
+  const eventId = typeof body.event_id === 'string' ? body.event_id : '';
 
   if (!consent)              return json({ ok: false, error: 'consent_required' }, 400);
   if (!EMAIL_RE.test(email)) return json({ ok: false, error: 'invalid_email' }, 400);
@@ -31,7 +33,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   await env.PENDING_SIGNUPS.put(
     token,
-    JSON.stringify({ email, lang, source, createdAt: Date.now() }),
+    JSON.stringify({ email, lang, source, trackingConsent, eventId, createdAt: Date.now() }),
     { expirationTtl: TOKEN_TTL_SECONDS }
   );
 

@@ -239,6 +239,10 @@ const numberedSections = content.sections.map(section => ({
   const btnLabel = button.querySelector('.submit-label');
   const lang    = document.querySelector('.survey').dataset.lang || 'fr';
 
+  if (window.lacetTrack) {
+    window.lacetTrack('ViewContent', { content_category: 'survey' });
+  }
+
   const nlToggle = form.querySelector('input[name="newsletter_optin"]');
   const nlFields = form.querySelector('.survey-nl-fields');
   const nlEmail  = form.querySelector('input[name="newsletter_email"]');
@@ -333,6 +337,14 @@ const numberedSections = content.sections.map(section => ({
     if (!captchaToken) throw new Error('captcha_missing');
     data.captcha_token = String(captchaToken);
 
+    // Tracking consent (read from localStorage written by the consent banner)
+    var consentRaw = '';
+    try { consentRaw = localStorage.getItem('lacet_consent_v1') || ''; } catch (e) {}
+    data.tracking_consent = consentRaw.indexOf('accepted:') === 0 ? 'accepted' : 'declined';
+
+    // Shared event_id for client/server dedup (Meta Lead event)
+    data.event_id = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+
     return data;
   }
 
@@ -380,8 +392,15 @@ const numberedSections = content.sections.map(section => ({
       });
       const data = await res.json().catch(() => ({ ok: false }));
       if (data.ok) {
-        const redirect = lang === 'fr' ? '/merci-sondage' : '/en/thanks-survey';
-        window.location.href = redirect;
+        // Fire Pixel Lead on the browser (with shared event_id for dedup with CAPI)
+        if (payload.contest_optin && window.lacetTrack) {
+          window.lacetTrack('Lead', { content_category: 'survey' }, payload.event_id);
+        }
+        const base = lang === 'fr' ? '/merci-sondage' : '/en/thanks-survey';
+        const params = [];
+        if (payload.contest_optin) params.push('concours=1');
+        if (payload.newsletter_optin) params.push('infolettre=1');
+        window.location.href = params.length ? base + '?' + params.join('&') : base;
       } else if (data.error === 'captcha_failed') {
         showError(messages.captcha_failed, form.querySelector('.survey-captcha'));
         if (window.turnstile) window.turnstile.reset();
