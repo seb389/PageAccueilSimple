@@ -111,6 +111,15 @@ const FR: SurveyContent = {
           ],
         },
         {
+          key: "gender", type: "radio", required: false,
+          label: "Votre genre ?",
+          options: [
+            { value: "man",        label: "Homme" },
+            { value: "woman",      label: "Femme" },
+            { value: "nb_other",   label: "Non-binaire ou autre" },
+          ],
+        },
+        {
           key: "region", type: "radio", required: true,
           label: "Votre région au Québec ?",
           options: [
@@ -432,6 +441,15 @@ const EN: SurveyContent = {
             { value: "45_54",    label: "45 to 54" },
             { value: "55_64",    label: "55 to 64" },
             { value: "65_plus",  label: "65 and over" },
+          ],
+        },
+        {
+          key: "gender", type: "radio", required: false,
+          label: "Your gender?",
+          options: [
+            { value: "man",        label: "Man" },
+            { value: "woman",      label: "Woman" },
+            { value: "nb_other",   label: "Non-binary or other" },
           ],
         },
         {

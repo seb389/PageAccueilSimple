@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS survey_responses (
 
   -- Section 1 - Profil
   age              TEXT NOT NULL,
+  gender           TEXT,           -- nullable: question facultative
   region           TEXT NOT NULL,
   practice         TEXT NOT NULL,
   km_season        TEXT NOT NULL,

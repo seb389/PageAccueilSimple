@@ -12,6 +12,7 @@ export interface SurveyResponse {
   practice: string;
   km_season: string;
   bike_value: string;
+  gender: string | null;
   maintenance: string | null;
   maintenance_satisfaction: number | null;
   interest: number;
@@ -39,10 +40,11 @@ export interface SurveyResponse {
   comments: string | null;
 }
 
-type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type' | 'main_concern' | 'nps' | 'rentals_per_season' | 'maintenance' | 'maintenance_satisfaction'> & {
+type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type' | 'main_concern' | 'nps' | 'rentals_per_season' | 'gender' | 'maintenance' | 'maintenance_satisfaction'> & {
   contexts: string[];
   bike_type: string[];
   main_concern: string[];
+  gender?: string;
   maintenance?: string;
   maintenance_satisfaction?: number;
 };
@@ -473,12 +475,20 @@ export const TEST_RESPONSES: SurveyResponse[] = RAW.map(normalize).map((r, i) =>
     ?? (r.bike_value === 'none' ? null : (MAINTENANCE_BY_BIKE_VALUE[r.bike_value]?.[i % 4] ?? 'mostly_self'));
   const maintenance_satisfaction: number | null = r.maintenance_satisfaction
     ?? (maintenance == null ? null : (SATISFACTION_BY_MAINTENANCE[maintenance]?.[i % 4] ?? 3));
+  // Genre déterministe (~68 % homme, 24 % femme, 4 % nb_other, 4 % null)
+  const genderRoll = i % 25;
+  const gender: string | null = r.gender
+    ?? (genderRoll < 17 ? 'man'
+        : genderRoll < 23 ? 'woman'
+        : genderRoll < 24 ? 'nb_other'
+        : null);
   return {
     id: i + 1,
     created_at: ts.toISOString().replace('T', ' ').slice(0, 19),
     lang: r.lang,
     ip_country: r.ip_country,
     age: r.age, region: r.region, practice: r.practice, km_season: r.km_season, bike_value: r.bike_value,
+    gender,
     maintenance,
     maintenance_satisfaction,
     interest: r.interest, rented_before: r.rented_before,

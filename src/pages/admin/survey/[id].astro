@@ -153,6 +153,10 @@ const title = response ? `LACET · Réponse #${response.id}` : 'LACET · Répons
                 <dd>{labelFor('age', response.age)}</dd>
               </div>
               <div class="detail-row">
+                <dt>Genre</dt>
+                <dd>{response.gender ? labelFor('gender', response.gender) : <em class="detail-empty">— (non renseigné)</em>}</dd>
+              </div>
+              <div class="detail-row">
                 <dt>Région</dt>
                 <dd>{labelFor('region', response.region)}</dd>
               </div>

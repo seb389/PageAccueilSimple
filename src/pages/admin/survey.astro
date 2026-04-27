@@ -132,6 +132,101 @@ function orderCross<T extends { value: string }>(qKey: string, items: T[]): T[] 
   return items;
 }
 
+// Average of a numeric field, grouped by another field. Skips rows where either is null/empty.
+function avgNumericBy(
+  rows: SurveyResponse[],
+  groupField: keyof SurveyResponse,
+  valueField: keyof SurveyResponse,
+): { value: string; avg: number; n: number }[] {
+  const groups = new Map<string, number[]>();
+  for (const r of rows) {
+    const k = String(r[groupField] ?? '');
+    if (!k) continue;
+    const v = r[valueField];
+    if (typeof v !== 'number') continue;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k)!.push(v);
+  }
+  return Array.from(groups.entries()).map(([value, scores]) => ({
+    value,
+    avg: scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0,
+    n: scores.length,
+  }));
+}
+
+type GroupedDist = { group: string; n: number; items: { value: string; n: number }[] };
+
+// Distribution of a single-value field, grouped by another field.
+// `n` is the count of rows that have a value for groupField (denominator for %).
+function singleDistByGroup(
+  rows: SurveyResponse[],
+  groupField: keyof SurveyResponse,
+  field: keyof SurveyResponse,
+): GroupedDist[] {
+  const inner = new Map<string, Map<string, number>>();
+  const totals = new Map<string, number>();
+  for (const r of rows) {
+    const g = String(r[groupField] ?? '');
+    if (!g) continue;
+    totals.set(g, (totals.get(g) ?? 0) + 1);
+    const v = String(r[field] ?? '');
+    if (!v) continue;
+    if (!inner.has(g)) inner.set(g, new Map());
+    const m = inner.get(g)!;
+    m.set(v, (m.get(v) ?? 0) + 1);
+  }
+  return Array.from(totals.entries()).map(([group, n]) => ({
+    group,
+    n,
+    items: Array.from((inner.get(group) ?? new Map<string, number>()).entries()).map(([value, count]) => ({ value, n: count })),
+  }));
+}
+
+// Distribution of a multi (JSON array) field, grouped by another field.
+function multiDistByGroup(
+  rows: SurveyResponse[],
+  groupField: keyof SurveyResponse,
+  field: keyof SurveyResponse,
+): GroupedDist[] {
+  const inner = new Map<string, Map<string, number>>();
+  const totals = new Map<string, number>();
+  for (const r of rows) {
+    const g = String(r[groupField] ?? '');
+    if (!g) continue;
+    totals.set(g, (totals.get(g) ?? 0) + 1);
+    let arr: string[] = [];
+    try { arr = JSON.parse(String(r[field] ?? '[]')); } catch {}
+    if (!inner.has(g)) inner.set(g, new Map());
+    const m = inner.get(g)!;
+    for (const v of arr) m.set(v, (m.get(v) ?? 0) + 1);
+  }
+  return Array.from(totals.entries()).map(([group, n]) => ({
+    group,
+    n,
+    items: Array.from((inner.get(group) ?? new Map<string, number>()).entries()).map(([value, count]) => ({ value, n: count })),
+  }));
+}
+
+// Order the outer groups (genders) by the gender question's option order.
+function orderGenderGroups(groups: GroupedDist[]): GroupedDist[] {
+  const order: string[] = [];
+  for (const section of content.sections) {
+    for (const q of section.questions) {
+      if (q.key === 'gender' && q.type === 'radio') {
+        for (const o of q.options) order.push(o.value);
+      }
+    }
+  }
+  const map = new Map(groups.map(g => [g.group, g]));
+  return order.map(v => map.get(v)).filter((x): x is GroupedDist => x !== undefined && x.n > 0);
+}
+
+// Order the inner items (bike_type, top_service, main_concern) by the question's option order,
+// keeping only those with at least one occurrence to avoid noise.
+function orderInnerItems(qKey: string, items: { value: string; n: number }[]): { value: string; n: number }[] {
+  return orderCross(qKey, items).filter(i => i.n > 0);
+}
+
 // ─── Constants ───────────────────────────────────────────────────────
 const PRICE_TARGETS: { [k: string]: string } = {
   price_week: '500_700',
@@ -248,6 +343,12 @@ const crossPriceTargetByPractice = orderCross(
   'practice',
   pctMatchingBy(allResponses, 'practice', r => r.price_week === '500_700' || r.price_week === '700_1000' || r.price_week === 'over_1000'),
 );
+
+// Cross-analyses × genre
+const crossBikeTypeByGender    = orderGenderGroups(multiDistByGroup(allResponses, 'gender', 'bike_type'));
+const crossSatByGender         = orderCross('gender', avgNumericBy(allResponses, 'gender', 'maintenance_satisfaction'));
+const crossTopServiceByGender  = orderGenderGroups(singleDistByGroup(allResponses, 'gender', 'top_service'));
+const crossMainConcernByGender = orderGenderGroups(multiDistByGroup(allResponses, 'gender', 'main_concern'));
 
 // Pagination
 const PAGE_SIZE = 20;
@@ -574,8 +675,8 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
               {crossInterestByPractice.map(item => (
                 <div class="dist-row">
                   <span class="dist-label">{labelFor('practice', item.value)}</span>
-                  <div class="dist-bar"><div class="dist-fill" style={`width:${item.avg * 10}%`}></div></div>
-                  <span class="dist-count">{item.avg.toFixed(1)}/10 <span class="dist-pct">(n={item.n})</span></span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${item.avg * 20}%`}></div></div>
+                  <span class="dist-count">{item.avg.toFixed(1)}/5 <span class="dist-pct">(n={item.n})</span></span>
                 </div>
               ))}
             </div>
@@ -587,15 +688,15 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
               {crossInterestByBikeValue.map(item => (
                 <div class="dist-row">
                   <span class="dist-label">{labelFor('bike_value', item.value)}</span>
-                  <div class="dist-bar"><div class="dist-fill" style={`width:${item.avg * 10}%`}></div></div>
-                  <span class="dist-count">{item.avg.toFixed(1)}/10 <span class="dist-pct">(n={item.n})</span></span>
+                  <div class="dist-bar"><div class="dist-fill" style={`width:${item.avg * 20}%`}></div></div>
+                  <span class="dist-count">{item.avg.toFixed(1)}/5 <span class="dist-pct">(n={item.n})</span></span>
                 </div>
               ))}
             </div>
           </div>
 
           <div class="dist-group">
-            <h3 class="dist-group-title">% à fort intérêt (≥ 7) × région</h3>
+            <h3 class="dist-group-title">% à fort intérêt (≥ 4) × région</h3>
             <div class="dist">
               {crossHighInterestByRegion.map(item => (
                 <div class="dist-row">
@@ -619,6 +720,87 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
               ))}
             </div>
           </div>
+
+          {crossBikeTypeByGender.length > 0 && (
+            <div class="dist-group">
+              <h3 class="dist-group-title">Genre × type de vélo</h3>
+              {crossBikeTypeByGender.map(group => (
+                <div class="cross-group-card">
+                  <div class="cross-group-head">
+                    {labelFor('gender', group.group)} <span class="cross-group-n">(n={group.n})</span>
+                  </div>
+                  <div class="dist">
+                    {orderInnerItems('bike_type', group.items).map(item => (
+                      <div class="dist-row">
+                        <span class="dist-label">{labelFor('bike_type', item.value)}</span>
+                        <div class="dist-bar"><div class="dist-fill" style={`width:${(item.n / group.n) * 100}%`}></div></div>
+                        <span class="dist-count">{Math.round((item.n / group.n) * 100)}% <span class="dist-pct">({item.n}/{group.n})</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {crossSatByGender.length > 0 && (
+            <div class="dist-group">
+              <h3 class="dist-group-title">Satisfaction entretien moyenne × genre</h3>
+              <div class="dist">
+                {crossSatByGender.map(item => (
+                  <div class="dist-row">
+                    <span class="dist-label">{labelFor('gender', item.value)}</span>
+                    <div class="dist-bar"><div class="dist-fill" style={`width:${item.avg * 20}%`}></div></div>
+                    <span class="dist-count">{item.avg.toFixed(1)}/5 <span class="dist-pct">(n={item.n})</span></span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {crossTopServiceByGender.length > 0 && (
+            <div class="dist-group">
+              <h3 class="dist-group-title">Genre × service le plus déterminant</h3>
+              {crossTopServiceByGender.map(group => (
+                <div class="cross-group-card">
+                  <div class="cross-group-head">
+                    {labelFor('gender', group.group)} <span class="cross-group-n">(n={group.n})</span>
+                  </div>
+                  <div class="dist">
+                    {orderInnerItems('top_service', group.items).map(item => (
+                      <div class="dist-row">
+                        <span class="dist-label">{labelFor('top_service', item.value)}</span>
+                        <div class="dist-bar"><div class="dist-fill" style={`width:${(item.n / group.n) * 100}%`}></div></div>
+                        <span class="dist-count">{Math.round((item.n / group.n) * 100)}% <span class="dist-pct">({item.n}/{group.n})</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {crossMainConcernByGender.length > 0 && (
+            <div class="dist-group">
+              <h3 class="dist-group-title">Genre × freins évoqués</h3>
+              {crossMainConcernByGender.map(group => (
+                <div class="cross-group-card">
+                  <div class="cross-group-head">
+                    {labelFor('gender', group.group)} <span class="cross-group-n">(n={group.n})</span>
+                  </div>
+                  <div class="dist">
+                    {orderInnerItems('main_concern', group.items).map(item => (
+                      <div class="dist-row">
+                        <span class="dist-label">{labelFor('main_concern', item.value)}</span>
+                        <div class="dist-bar"><div class="dist-fill" style={`width:${(item.n / group.n) * 100}%`}></div></div>
+                        <span class="dist-count">{Math.round((item.n / group.n) * 100)}% <span class="dist-pct">({item.n}/{group.n})</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
