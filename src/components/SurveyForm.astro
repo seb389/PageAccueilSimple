@@ -38,7 +38,15 @@ const numberedSections = content.sections.map(section => ({
         </legend>
 
         {section.questions.map((q: Question & { number: number }) => (
-          <div class="q" data-qkey={q.key} data-qtype={q.type}>
+          <div
+            class="q"
+            data-qkey={q.key}
+            data-qtype={q.type}
+            data-showif-key={q.showIf?.key}
+            data-showif-equals={q.showIf?.equals}
+            data-showif-not-equals={q.showIf?.notEquals}
+            hidden={q.showIf != null}
+          >
             <div class="q-label">
               <span class="q-num">Q{q.number}.</span>
               <span>
@@ -243,6 +251,51 @@ const numberedSections = content.sections.map(section => ({
     window.lacetTrack('ViewContent', { content_category: 'survey' });
   }
 
+  // ── Conditional questions (showIf) ───────────────────────────────────
+  const conditionals = Array.from(form.querySelectorAll('.q[data-showif-key]'));
+
+  function getCurrentValue(parentKey) {
+    const checked = form.querySelector(
+      'input[type="radio"][name="' + CSS.escape(parentKey) + '"]:checked'
+    );
+    return checked ? checked.value : null;
+  }
+
+  function isVisible(qEl) {
+    const parentKey = qEl.dataset.showifKey;
+    const equals = qEl.dataset.showifEquals;
+    const notEquals = qEl.dataset.showifNotEquals;
+    const v = getCurrentValue(parentKey);
+    if (equals !== undefined && equals !== '') return v === equals;
+    if (notEquals !== undefined && notEquals !== '') return v != null && v !== notEquals;
+    return true;
+  }
+
+  function clearAnswers(qEl) {
+    qEl.querySelectorAll('input').forEach(inp => {
+      if (inp.type === 'radio' || inp.type === 'checkbox') inp.checked = false;
+      else inp.value = '';
+    });
+    qEl.querySelectorAll('textarea').forEach(t => (t.value = ''));
+  }
+
+  function applyShowIf() {
+    conditionals.forEach(qEl => {
+      const visible = isVisible(qEl);
+      if (qEl.hidden && visible) {
+        qEl.hidden = false;
+      } else if (!qEl.hidden && !visible) {
+        clearAnswers(qEl);
+        qEl.hidden = true;
+      }
+    });
+  }
+
+  if (conditionals.length) {
+    form.addEventListener('change', applyShowIf);
+    applyShowIf();
+  }
+
   const nlToggle = form.querySelector('input[name="newsletter_optin"]');
   const nlFields = form.querySelector('.survey-nl-fields');
   const nlEmail  = form.querySelector('input[name="newsletter_email"]');
@@ -287,6 +340,7 @@ const numberedSections = content.sections.map(section => ({
     const formData = new FormData(form);
 
     form.querySelectorAll('.q').forEach(qEl => {
+      if (qEl.hidden) return; // skip conditional questions whose parent answer hides them
       const key = qEl.dataset.qkey;
       const type = qEl.dataset.qtype;
       const required = qEl.querySelector('.q-required') !== null;

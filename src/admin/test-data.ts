@@ -12,10 +12,13 @@ export interface SurveyResponse {
   practice: string;
   km_season: string;
   bike_value: string;
+  maintenance: string | null;
+  maintenance_satisfaction: number | null;
   interest: number;
   rented_before: string;
-  contexts: string;   // JSON-encoded array
-  bike_type: string;  // JSON-encoded array
+  contexts: string;       // JSON-encoded array
+  bike_type: string;      // JSON-encoded array
+  // (note: main_concern below is also a JSON-encoded array — kept as string here to mirror DB shape)
   duration: string;
   rentals_per_season: string;
   price_week: string;
@@ -36,9 +39,12 @@ export interface SurveyResponse {
   comments: string | null;
 }
 
-type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type' | 'nps' | 'rentals_per_season'> & {
+type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type' | 'main_concern' | 'nps' | 'rentals_per_season' | 'maintenance' | 'maintenance_satisfaction'> & {
   contexts: string[];
   bike_type: string[];
+  main_concern: string[];
+  maintenance?: string;
+  maintenance_satisfaction?: number;
 };
 
 const RAW: RawResponse[] = [
@@ -54,7 +60,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'essential',
     val_insurance: 'interesting', val_exchange: 'interesting', val_coaching: 'low_priority',
     val_equipment: 'interesting', val_purchase: 'interesting', val_routes: 'low_priority',
-    top_service: 'delivery', main_concern: 'damage_loss',
+    top_service: 'delivery', main_concern: ['damage_loss'],
     comments: 'Très intéressant pour les voyages cyclo en montagne.',
   },
   {
@@ -68,7 +74,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'interesting', val_bikefit: 'essential', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'low_priority', val_coaching: 'not_relevant',
     val_equipment: 'interesting', val_purchase: 'low_priority', val_routes: 'low_priority',
-    top_service: 'bikefit', main_concern: 'damage_loss',
+    top_service: 'bikefit', main_concern: ['damage_loss'],
     comments: null,
   },
   {
@@ -82,7 +88,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'interesting',
     val_insurance: 'essential', val_exchange: 'interesting', val_coaching: 'low_priority',
     val_equipment: 'low_priority', val_purchase: 'essential', val_routes: 'interesting',
-    top_service: 'purchase_option', main_concern: 'no_concern',
+    top_service: 'purchase_option', main_concern: [],
     comments: 'Idéal avant un achat de vélo de plus de 12 000 $.',
   },
 
@@ -98,7 +104,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'interesting', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'interesting', val_coaching: 'low_priority',
     val_equipment: 'essential', val_purchase: 'interesting', val_routes: 'interesting',
-    top_service: 'maintenance', main_concern: 'price',
+    top_service: 'maintenance', main_concern: ['price'],
     comments: null,
   },
   {
@@ -112,7 +118,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'interesting',
     val_insurance: 'interesting', val_exchange: 'essential', val_coaching: 'interesting',
     val_equipment: 'essential', val_purchase: 'essential', val_routes: 'interesting',
-    top_service: 'exchange', main_concern: 'damage_loss',
+    top_service: 'exchange', main_concern: ['damage_loss'],
     comments: null,
   },
   {
@@ -126,7 +132,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'interesting', val_bikefit: 'low_priority', val_maintenance: 'essential',
     val_insurance: 'interesting', val_exchange: 'low_priority', val_coaching: 'not_relevant',
     val_equipment: 'interesting', val_purchase: 'low_priority', val_routes: 'low_priority',
-    top_service: 'maintenance', main_concern: 'maintenance_quality',
+    top_service: 'maintenance', main_concern: ['maintenance_quality'],
     comments: null,
   },
 
@@ -142,7 +148,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'interesting', val_coaching: 'interesting',
     val_equipment: 'low_priority', val_purchase: 'low_priority', val_routes: 'not_relevant',
-    top_service: 'bikefit', main_concern: 'damage_loss',
+    top_service: 'bikefit', main_concern: ['damage_loss'],
     comments: 'Voyage en Europe, intéressant si je peux avoir un Aethos.',
   },
   {
@@ -156,7 +162,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'low_priority', val_bikefit: 'essential', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'interesting', val_coaching: 'not_relevant',
     val_equipment: 'not_relevant', val_purchase: 'essential', val_routes: 'not_relevant',
-    top_service: 'purchase_option', main_concern: 'prefer_own',
+    top_service: 'purchase_option', main_concern: ['prefer_own'],
     comments: null,
   },
 
@@ -172,7 +178,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'low_priority', val_maintenance: 'interesting',
     val_insurance: 'essential', val_exchange: 'low_priority', val_coaching: 'low_priority',
     val_equipment: 'interesting', val_purchase: 'interesting', val_routes: 'interesting',
-    top_service: 'delivery', main_concern: 'price',
+    top_service: 'delivery', main_concern: ['price'],
     comments: 'Le prix est mon principal frein.',
   },
   {
@@ -186,7 +192,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'interesting',
     val_insurance: 'essential', val_exchange: 'low_priority', val_coaching: 'interesting',
     val_equipment: 'essential', val_purchase: 'low_priority', val_routes: 'essential',
-    top_service: 'delivery', main_concern: 'logistics',
+    top_service: 'delivery', main_concern: ['logistics'],
     comments: null,
   },
   {
@@ -200,7 +206,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'interesting', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'low_priority', val_coaching: 'low_priority',
     val_equipment: 'essential', val_purchase: 'low_priority', val_routes: 'essential',
-    top_service: 'delivery', main_concern: 'damage_loss',
+    top_service: 'delivery', main_concern: ['damage_loss'],
     comments: 'Avoir le vélo livré simplifie tellement les choses.',
   },
   {
@@ -214,7 +220,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'interesting', val_bikefit: 'essential', val_maintenance: 'low_priority',
     val_insurance: 'essential', val_exchange: 'not_relevant', val_coaching: 'interesting',
     val_equipment: 'essential', val_purchase: 'essential', val_routes: 'interesting',
-    top_service: 'purchase_option', main_concern: 'price',
+    top_service: 'purchase_option', main_concern: ['price'],
     comments: null,
   },
 
@@ -230,7 +236,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'interesting',
     val_insurance: 'essential', val_exchange: 'not_relevant', val_coaching: 'essential',
     val_equipment: 'essential', val_purchase: 'low_priority', val_routes: 'essential',
-    top_service: 'equipment', main_concern: 'logistics',
+    top_service: 'equipment', main_concern: ['logistics'],
     comments: null,
   },
   {
@@ -244,21 +250,21 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'low_priority', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'not_relevant', val_coaching: 'low_priority',
     val_equipment: 'interesting', val_purchase: 'not_relevant', val_routes: 'interesting',
-    top_service: 'delivery', main_concern: 'logistics',
+    top_service: 'delivery', main_concern: ['logistics'],
     comments: null,
   },
   {
     lang: 'fr', ip_country: 'CA',
     age: '35_44', region: 'other_qc', practice: 'occasional', km_season: '500_1500', bike_value: 'under_1500',
     interest: 2, rented_before: 'never',
-    contexts: ['none'],
+    contexts: [],
     bike_type: ['endurance'],
     duration: 'under_week',
     price_week: 'would_not_rent', price_month: 'would_not_rent', price_season: 'would_not_rent',
     val_delivery: 'low_priority', val_bikefit: 'not_relevant', val_maintenance: 'low_priority',
     val_insurance: 'low_priority', val_exchange: 'not_relevant', val_coaching: 'not_relevant',
     val_equipment: 'low_priority', val_purchase: 'not_relevant', val_routes: 'not_relevant',
-    top_service: 'other', main_concern: 'prefer_own',
+    top_service: 'other', main_concern: ['prefer_own'],
     comments: 'Je préfère mon propre vélo.',
   },
 
@@ -274,7 +280,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'low_priority', val_coaching: 'interesting',
     val_equipment: 'essential', val_purchase: 'low_priority', val_routes: 'low_priority',
-    top_service: 'bikefit', main_concern: 'damage_loss',
+    top_service: 'bikefit', main_concern: ['damage_loss'],
     comments: 'Pour les courses Ironman 70.3, idéal.',
   },
   {
@@ -288,7 +294,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'interesting',
     val_insurance: 'essential', val_exchange: 'low_priority', val_coaching: 'low_priority',
     val_equipment: 'low_priority', val_purchase: 'low_priority', val_routes: 'not_relevant',
-    top_service: 'delivery', main_concern: 'maintenance_quality',
+    top_service: 'delivery', main_concern: ['maintenance_quality'],
     comments: null,
   },
 
@@ -304,7 +310,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'interesting', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'interesting', val_coaching: 'low_priority',
     val_equipment: 'interesting', val_purchase: 'interesting', val_routes: 'essential',
-    top_service: 'routes', main_concern: 'damage_loss',
+    top_service: 'routes', main_concern: ['damage_loss'],
     comments: 'Les itinéraires suggérés feraient une vraie différence.',
   },
   {
@@ -318,7 +324,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'essential', val_coaching: 'interesting',
     val_equipment: 'essential', val_purchase: 'essential', val_routes: 'essential',
-    top_service: 'purchase_option', main_concern: 'no_concern',
+    top_service: 'purchase_option', main_concern: [],
     comments: null,
   },
 
@@ -334,7 +340,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'interesting',
     val_insurance: 'essential', val_exchange: 'interesting', val_coaching: 'low_priority',
     val_equipment: 'interesting', val_purchase: 'low_priority', val_routes: 'essential',
-    top_service: 'delivery', main_concern: 'logistics',
+    top_service: 'delivery', main_concern: ['logistics'],
     comments: 'Travelling to Quebec for cycling — delivery is essential.',
   },
   {
@@ -348,7 +354,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'low_priority', val_coaching: 'not_relevant',
     val_equipment: 'low_priority', val_purchase: 'low_priority', val_routes: 'interesting',
-    top_service: 'bikefit', main_concern: 'damage_loss',
+    top_service: 'bikefit', main_concern: ['damage_loss'],
     comments: null,
   },
   {
@@ -362,7 +368,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'interesting', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'not_relevant', val_coaching: 'not_relevant',
     val_equipment: 'low_priority', val_purchase: 'not_relevant', val_routes: 'essential',
-    top_service: 'routes', main_concern: 'logistics',
+    top_service: 'routes', main_concern: ['logistics'],
     comments: null,
   },
 
@@ -378,7 +384,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'low_priority', val_maintenance: 'low_priority',
     val_insurance: 'essential', val_exchange: 'not_relevant', val_coaching: 'not_relevant',
     val_equipment: 'essential', val_purchase: 'not_relevant', val_routes: 'low_priority',
-    top_service: 'equipment', main_concern: 'logistics',
+    top_service: 'equipment', main_concern: ['logistics'],
     comments: 'Pour offrir à mon conjoint passionné.',
   },
 
@@ -394,7 +400,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'essential', val_coaching: 'interesting',
     val_equipment: 'interesting', val_purchase: 'essential', val_routes: 'low_priority',
-    top_service: 'maintenance', main_concern: 'no_concern',
+    top_service: 'maintenance', main_concern: [],
     comments: 'Idéal pour ne pas avoir à acheter.',
   },
   {
@@ -408,7 +414,7 @@ const RAW: RawResponse[] = [
     val_delivery: 'essential', val_bikefit: 'essential', val_maintenance: 'essential',
     val_insurance: 'essential', val_exchange: 'interesting', val_coaching: 'essential',
     val_equipment: 'essential', val_purchase: 'essential', val_routes: 'essential',
-    top_service: 'maintenance', main_concern: 'price',
+    top_service: 'maintenance', main_concern: ['price'],
     comments: null,
   },
 ];
@@ -419,10 +425,32 @@ const HOUR = 60 * 60 * 1000;
 
 // Bike value 'over_5000' was a real slug, but we sometimes use over_5000 too.
 // Normalize 5000_plus -> over_5000 for km_season (it's actually 'over_5000').
+// Also remap legacy 1-10 interest values to the current 1-5 scale (ceil(v/2)).
 function normalize(r: RawResponse): RawResponse {
   const km = r.km_season as string;
-  return { ...r, km_season: km === '5000_plus' ? 'over_5000' : km };
+  const interest = r.interest > 5 ? Math.ceil(r.interest / 2) : r.interest;
+  return { ...r, km_season: km === '5000_plus' ? 'over_5000' : km, interest };
 }
+
+// Distribution plausible des modes d'entretien selon la valeur du vélo.
+// Index déterministe (i % 4) pour reproductibilité; pondération biaisée selon la gamme.
+const MAINTENANCE_BY_BIKE_VALUE: { [k: string]: string[] } = {
+  under_1500:  ['mostly_self', 'shop',        'all_self',     'shop'],
+  '1500_3000': ['mostly_self', 'shop',        'mostly_self',  'all_self'],
+  '3000_5000': ['mostly_self', 'indep',       'shop',         'mostly_self'],
+  '5000_8000': ['indep',       'mostly_self', 'all_self',     'mostly_self'],
+  '8000_12000':['indep',       'all_self',    'mostly_self',  'indep'],
+  over_12000:  ['all_self',    'indep',       'mostly_self',  'indep'],
+};
+
+// Satisfaction (1-5) plausible selon le mode d'entretien.
+// DIY et atelier indépendant tendent à être plus satisfaits qu'une chaîne grand public.
+const SATISFACTION_BY_MAINTENANCE: { [k: string]: number[] } = {
+  all_self:    [5, 4, 5, 4],
+  mostly_self: [4, 4, 5, 3],
+  shop:        [3, 3, 4, 2],
+  indep:       [5, 4, 4, 5],
+};
 
 // Mapping plausible entre durée choisie et nombre de locations envisagées par saison
 const RENTALS_BY_DURATION: { [k: string]: string } = {
@@ -439,14 +467,20 @@ export const TEST_RESPONSES: SurveyResponse[] = RAW.map(normalize).map((r, i) =>
   // NPS dérivé de l'intérêt avec petite variation déterministe pour diversité
   const npsBase = Math.max(0, r.interest - 1);
   const npsOffset = (i % 3) - 1; // -1, 0 ou 1
-  const nps = Math.min(10, Math.max(0, npsBase + npsOffset));
+  const nps = Math.min(5, Math.max(0, npsBase + npsOffset));
   const rentals_per_season = RENTALS_BY_DURATION[r.duration] ?? 'one';
+  const maintenance: string | null = r.maintenance
+    ?? (r.bike_value === 'none' ? null : (MAINTENANCE_BY_BIKE_VALUE[r.bike_value]?.[i % 4] ?? 'mostly_self'));
+  const maintenance_satisfaction: number | null = r.maintenance_satisfaction
+    ?? (maintenance == null ? null : (SATISFACTION_BY_MAINTENANCE[maintenance]?.[i % 4] ?? 3));
   return {
     id: i + 1,
     created_at: ts.toISOString().replace('T', ' ').slice(0, 19),
     lang: r.lang,
     ip_country: r.ip_country,
     age: r.age, region: r.region, practice: r.practice, km_season: r.km_season, bike_value: r.bike_value,
+    maintenance,
+    maintenance_satisfaction,
     interest: r.interest, rented_before: r.rented_before,
     contexts: JSON.stringify(r.contexts),
     bike_type: JSON.stringify(r.bike_type),
@@ -458,7 +492,7 @@ export const TEST_RESPONSES: SurveyResponse[] = RAW.map(normalize).map((r, i) =>
     val_equipment: r.val_equipment, val_purchase: r.val_purchase, val_routes: r.val_routes,
     top_service: r.top_service,
     nps,
-    main_concern: r.main_concern,
+    main_concern: JSON.stringify(r.main_concern),
     comments: r.comments,
   };
 });

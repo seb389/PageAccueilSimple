@@ -2,12 +2,17 @@ import type { Lang } from './i18n';
 
 export type Option = { value: string; label: string };
 
+// showIf: question is shown only when the parent question's answer matches.
+// `equals` = visible iff parent value === equals.
+// `notEquals` = visible iff parent value is set AND !== notEquals.
+export type ShowIf = { key: string; equals?: string; notEquals?: string };
+
 export type Question =
-  | { key: string; type: 'radio'; label: string; required: boolean; options: Option[] }
-  | { key: string; type: 'checkbox'; label: string; required: boolean; options: Option[]; hint?: string }
-  | { key: string; type: 'scale'; label: string; required: boolean; min: number; max: number; minLabel: string; maxLabel: string }
-  | { key: string; type: 'textarea'; label: string; required: boolean; placeholder?: string }
-  | { key: string; type: 'matrix'; label: string; required: boolean; intro?: string; rows: { key: string; label: string }[]; columns: Option[] };
+  | { key: string; type: 'radio'; label: string; required: boolean; options: Option[]; showIf?: ShowIf }
+  | { key: string; type: 'checkbox'; label: string; required: boolean; options: Option[]; hint?: string; showIf?: ShowIf }
+  | { key: string; type: 'scale'; label: string; required: boolean; min: number; max: number; minLabel: string; maxLabel: string; showIf?: ShowIf }
+  | { key: string; type: 'textarea'; label: string; required: boolean; placeholder?: string; showIf?: ShowIf }
+  | { key: string; type: 'matrix'; label: string; required: boolean; intro?: string; rows: { key: string; label: string }[]; columns: Option[]; showIf?: ShowIf };
 
 export type Section = {
   id: string;
@@ -156,6 +161,25 @@ const FR: SurveyContent = {
             { value: "over_12000",    label: "Plus de 12 000 $" },
           ],
         },
+        {
+          key: "maintenance", type: "radio", required: true,
+          label: "Comment faites-vous l'entretien et les réparations de votre vélo actuellement ?",
+          showIf: { key: "bike_value", notEquals: "none" },
+          options: [
+            { value: "all_self",     label: "Tout par moi-même" },
+            { value: "mostly_self",  label: "Surtout par moi-même, boutique pour le gros entretien" },
+            { value: "shop",         label: "Tout en boutique de vélo (détaillant ou chaîne)" },
+            { value: "indep",        label: "Atelier indépendant ou mécanicien spécialisé" },
+          ],
+        },
+        {
+          key: "maintenance_satisfaction", type: "scale", required: true,
+          label: "Quel est votre niveau de satisfaction par rapport à votre solution actuelle d'entretien ?",
+          showIf: { key: "bike_value", notEquals: "none" },
+          min: 1, max: 5,
+          minLabel: "Pas satisfait",
+          maxLabel: "Très satisfait",
+        },
       ],
     },
     {
@@ -165,8 +189,8 @@ const FR: SurveyContent = {
       questions: [
         {
           key: "interest", type: "scale", required: true,
-          label: "À quel point louer un vélo haut de gamme vous intéresse ? (1-10)",
-          min: 1, max: 10,
+          label: "À quel point louer un vélo haut de gamme vous intéresse ?",
+          min: 1, max: 5,
           minLabel: "Aucun intérêt",
           maxLabel: "Très fort intérêt",
         },
@@ -181,8 +205,8 @@ const FR: SurveyContent = {
           ],
         },
         {
-          key: "contexts", type: "checkbox", required: true,
-          hint: "Cochez tout ce qui s'applique.",
+          key: "contexts", type: "checkbox", required: false,
+          hint: "Cochez tout ce qui s'applique. Laissez vide si aucun contexte ne correspond.",
           label: "Dans quel(s) contexte(s) utiliseriez-vous ce service ?",
           options: [
             { value: "travel",           label: "En voyage ou en vacances" },
@@ -191,7 +215,7 @@ const FR: SurveyContent = {
             { value: "full_season",      label: "Saison complète, sans posséder de vélo" },
             { value: "gift",             label: "En cadeau à un·e proche cycliste" },
             { value: "special_outings",  label: "Sorties spéciales (camp, week-end, etc.)" },
-            { value: "none",             label: "Aucun pour le moment" },
+            { value: "head_turner",      label: "Pour avoir le vélo qui fait jaser au coffee ride" },
           ],
         },
         {
@@ -323,22 +347,22 @@ const FR: SurveyContent = {
       questions: [
         {
           key: "nps", type: "scale", required: true,
-          label: "Sur une échelle de 0 à 10, à quel point recommanderiez-vous ce service à un·e ami·e cycliste ?",
-          min: 0, max: 10,
+          label: "À quel point recommanderiez-vous ce service à un·e ami·e cycliste ?",
+          min: 0, max: 5,
           minLabel: "Pas du tout probable",
           maxLabel: "Extrêmement probable",
         },
         {
-          key: "main_concern", type: "radio", required: true,
-          label: "Votre principal frein à utiliser ce service ?",
+          key: "main_concern", type: "checkbox", required: false,
+          hint: "Cochez tout ce qui s'applique. Laissez vide si aucun frein.",
+          label: "Vos freins à utiliser ce service ?",
           options: [
             { value: "price",                label: "Le prix" },
             { value: "damage_loss",          label: "Peur d'endommager ou perdre le vélo" },
             { value: "prefer_own",           label: "Je préfère posséder le mien" },
             { value: "maintenance_quality",  label: "Qualité d'entretien inconnue" },
             { value: "logistics",            label: "Logistique (prise en charge, retour)" },
-            { value: "no_concern",           label: "Aucun, je serais prêt·e à essayer" },
-            { value: "other",                label: "Autre" },
+            { value: "fit_replication",      label: "Difficulté à reproduire le fit de mon vélo actuel" },
           ],
         },
         {
@@ -461,6 +485,25 @@ const EN: SurveyContent = {
             { value: "over_12000",    label: "More than $12,000" },
           ],
         },
+        {
+          key: "maintenance", type: "radio", required: true,
+          label: "How do you currently handle the maintenance and repairs of your bike?",
+          showIf: { key: "bike_value", notEquals: "none" },
+          options: [
+            { value: "all_self",     label: "All by myself" },
+            { value: "mostly_self",  label: "Mostly by myself, shop for major service" },
+            { value: "shop",         label: "Entirely at a bike shop (independent or chain)" },
+            { value: "indep",        label: "Independent workshop or specialized mechanic" },
+          ],
+        },
+        {
+          key: "maintenance_satisfaction", type: "scale", required: true,
+          label: "How satisfied are you with your current maintenance setup?",
+          showIf: { key: "bike_value", notEquals: "none" },
+          min: 1, max: 5,
+          minLabel: "Not satisfied",
+          maxLabel: "Very satisfied",
+        },
       ],
     },
     {
@@ -470,8 +513,8 @@ const EN: SurveyContent = {
       questions: [
         {
           key: "interest", type: "scale", required: true,
-          label: "How interested are you in renting a premium bike? (1-10)",
-          min: 1, max: 10,
+          label: "How interested are you in renting a premium bike?",
+          min: 1, max: 5,
           minLabel: "Not interested",
           maxLabel: "Very interested",
         },
@@ -486,8 +529,8 @@ const EN: SurveyContent = {
           ],
         },
         {
-          key: "contexts", type: "checkbox", required: true,
-          hint: "Check all that apply.",
+          key: "contexts", type: "checkbox", required: false,
+          hint: "Check all that apply. Leave blank if no situation applies.",
           label: "In which situation(s) would you use this service?",
           options: [
             { value: "travel",           label: "On a trip or vacation" },
@@ -496,7 +539,7 @@ const EN: SurveyContent = {
             { value: "full_season",      label: "Full season, without owning a bike" },
             { value: "gift",             label: "As a gift to a cyclist friend" },
             { value: "special_outings",  label: "Special rides (training camp, weekend, etc.)" },
-            { value: "none",             label: "None for the moment" },
+            { value: "head_turner",      label: "To ride the bike that turns heads on the coffee ride" },
           ],
         },
         {
@@ -628,22 +671,22 @@ const EN: SurveyContent = {
       questions: [
         {
           key: "nps", type: "scale", required: true,
-          label: "On a scale of 0 to 10, how likely are you to recommend this service to a cyclist friend?",
-          min: 0, max: 10,
+          label: "How likely are you to recommend this service to a cyclist friend?",
+          min: 0, max: 5,
           minLabel: "Not at all likely",
           maxLabel: "Extremely likely",
         },
         {
-          key: "main_concern", type: "radio", required: true,
-          label: "Your main concern about using this service?",
+          key: "main_concern", type: "checkbox", required: false,
+          hint: "Check all that apply. Leave blank if you have no concerns.",
+          label: "Your concerns about using this service?",
           options: [
             { value: "price",                label: "The price" },
             { value: "damage_loss",          label: "Fear of damaging or losing the bike" },
             { value: "prefer_own",           label: "I prefer to own my own" },
             { value: "maintenance_quality",  label: "Unknown maintenance quality" },
             { value: "logistics",            label: "Logistics (pickup, return)" },
-            { value: "no_concern",           label: "None, I'd be willing to try" },
-            { value: "other",                label: "Other" },
+            { value: "fit_replication",      label: "Hard to replicate the fit of my own bike" },
           ],
         },
         {

@@ -168,6 +168,14 @@ const title = response ? `LACET · Réponse #${response.id}` : 'LACET · Répons
                 <dt>Valeur du vélo actuel</dt>
                 <dd>{labelFor('bike_value', response.bike_value)}</dd>
               </div>
+              <div class="detail-row">
+                <dt>Entretien et réparations</dt>
+                <dd>{response.maintenance ? labelFor('maintenance', response.maintenance) : <em class="detail-empty">— (n'a pas de vélo)</em>}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>Satisfaction entretien</dt>
+                <dd>{response.maintenance_satisfaction != null ? <strong>{response.maintenance_satisfaction} / 5</strong> : <em class="detail-empty">— (n'a pas de vélo)</em>}</dd>
+              </div>
             </dl>
           </section>
 
@@ -176,7 +184,7 @@ const title = response ? `LACET · Réponse #${response.id}` : 'LACET · Répons
             <dl class="detail-list">
               <div class="detail-row">
                 <dt>Score d'intérêt</dt>
-                <dd><strong>{response.interest} / 10</strong></dd>
+                <dd><strong>{response.interest} / 5</strong></dd>
               </div>
               <div class="detail-row">
                 <dt>A déjà loué un vélo</dt>
@@ -255,17 +263,17 @@ const title = response ? `LACET · Réponse #${response.id}` : 'LACET · Répons
                 <dd>
                   {typeof response.nps === 'number' ? (
                     <>
-                      <strong>{response.nps} / 10</strong>
-                      {response.nps >= 9 && <span class="detail-tag tone-essential">Promoteur</span>}
-                      {response.nps >= 7 && response.nps < 9 && <span class="detail-tag tone-low">Passif</span>}
-                      {response.nps < 7 && <span class="detail-tag" style="background:#c45050;color:#fff;border-color:#c45050;">Détracteur</span>}
+                      <strong>{response.nps} / 5</strong>
+                      {response.nps >= 5 && <span class="detail-tag tone-essential">Promoteur</span>}
+                      {response.nps === 4 && <span class="detail-tag tone-low">Passif</span>}
+                      {response.nps < 4 && <span class="detail-tag" style="background:#c45050;color:#fff;border-color:#c45050;">Détracteur</span>}
                     </>
                   ) : <span class="muted">—</span>}
                 </dd>
               </div>
               <div class="detail-row">
-                <dt>Principal frein</dt>
-                <dd>{labelFor('main_concern', response.main_concern)}</dd>
+                <dt>Freins évoqués</dt>
+                <dd>{multiLabels('main_concern', response.main_concern)}</dd>
               </div>
               <div class="detail-row">
                 <dt>Commentaire libre</dt>

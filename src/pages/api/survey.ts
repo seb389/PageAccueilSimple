@@ -8,34 +8,44 @@ export const prerender = false;
 // Build allowed-values sets from the FR version (EN mirrors the same slugs)
 const content = survey.fr;
 
+type ShowIf = { key: string; equals?: string; notEquals?: string };
+
 type FieldSpec =
-  | { type: 'radio'; column: string; required: boolean; values: Set<string> }
-  | { type: 'checkbox'; column: string; required: boolean; values: Set<string> }
-  | { type: 'scale'; column: string; required: boolean; min: number; max: number }
-  | { type: 'textarea'; column: string; required: boolean; maxLength: number };
+  | { type: 'radio'; column: string; required: boolean; values: Set<string>; showIf?: ShowIf }
+  | { type: 'checkbox'; column: string; required: boolean; values: Set<string>; showIf?: ShowIf }
+  | { type: 'scale'; column: string; required: boolean; min: number; max: number; showIf?: ShowIf }
+  | { type: 'textarea'; column: string; required: boolean; maxLength: number; showIf?: ShowIf };
 
 const fields: Record<string, FieldSpec> = {};
 
 for (const section of content.sections) {
   for (const q of section.questions) {
     if (q.type === 'radio') {
-      fields[q.key] = { type: 'radio', column: q.key, required: q.required, values: new Set(q.options.map(o => o.value)) };
+      fields[q.key] = { type: 'radio', column: q.key, required: q.required, values: new Set(q.options.map(o => o.value)), showIf: q.showIf };
     } else if (q.type === 'checkbox') {
-      fields[q.key] = { type: 'checkbox', column: q.key, required: q.required, values: new Set(q.options.map(o => o.value)) };
+      fields[q.key] = { type: 'checkbox', column: q.key, required: q.required, values: new Set(q.options.map(o => o.value)), showIf: q.showIf };
     } else if (q.type === 'scale') {
-      fields[q.key] = { type: 'scale', column: q.key, required: q.required, min: q.min, max: q.max };
+      fields[q.key] = { type: 'scale', column: q.key, required: q.required, min: q.min, max: q.max, showIf: q.showIf };
     } else if (q.type === 'textarea') {
-      fields[q.key] = { type: 'textarea', column: q.key, required: q.required, maxLength: 2000 };
+      fields[q.key] = { type: 'textarea', column: q.key, required: q.required, maxLength: 2000, showIf: q.showIf };
     } else if (q.type === 'matrix') {
       const rowValues = new Set(q.columns.map(c => c.value));
       for (const row of q.rows) {
-        fields[row.key] = { type: 'radio', column: row.key, required: q.required, values: rowValues };
+        fields[row.key] = { type: 'radio', column: row.key, required: q.required, values: rowValues, showIf: q.showIf };
       }
     }
   }
 }
 
 const ALL_COLUMNS = Object.keys(fields);
+
+function showIfMet(showIf: ShowIf | undefined, body: Record<string, unknown>): boolean {
+  if (!showIf) return true;
+  const v = body[showIf.key];
+  if (showIf.equals !== undefined) return v === showIf.equals;
+  if (showIf.notEquals !== undefined) return typeof v === 'string' && v !== '' && v !== showIf.notEquals;
+  return true;
+}
 
 async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   if (!token || !env?.TURNSTILE_SECRET_KEY) return false;
@@ -89,6 +99,13 @@ export const POST: APIRoute = async ({ request }) => {
   for (const col of ALL_COLUMNS) {
     const spec = fields[col];
     const raw = body[col];
+
+    // Conditional question: if the showIf parent answer doesn't match,
+    // force value to null and skip validation (even if a value was submitted).
+    if (!showIfMet(spec.showIf, body)) {
+      values[col] = spec.type === 'checkbox' ? '[]' : null;
+      continue;
+    }
 
     if (spec.type === 'radio') {
       if (raw == null || raw === '') {
