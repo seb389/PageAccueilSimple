@@ -1627,6 +1627,12 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     background: var(--cuivre);
     box-shadow: inset 0 0 0 2px var(--charbon);
   }
+  /* On desktop, .matrix-row and .matrix-row-track are transparent to CSS Grid */
+  .matrix-row,
+  .matrix-row-track { display: contents; }
+  .matrix-row-extremes,
+  .matrix-cell-num,
+  .matrix-cell-text { display: none; }
 
   /* Survey newsletter opt-in block */
   .survey-newsletter {
@@ -1765,6 +1771,77 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     .survey-newsletter { padding: 22px 18px; }
     .survey-nl-fields { padding-left: 0; }
     .survey-contest-fields { padding-left: 0; }
+
+    /* Matrix → barre 1-4 par service sous 540px (pas pertinent ← → indispensable) */
+    .q-matrix { overflow-x: visible; }
+    .matrix-grid {
+      display: block;
+      min-width: 0;
+    }
+    .matrix-header,
+    .matrix-col-label { display: none; }
+    .matrix-row,
+    .matrix-row-track { display: block; }
+    .matrix-row {
+      padding-top: 18px;
+      margin-bottom: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .matrix-grid > .matrix-row:first-of-type {
+      border-top: none;
+      padding-top: 6px;
+    }
+    .matrix-row-label {
+      display: block;
+      padding: 0 0 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--craie);
+      border-bottom: none;
+    }
+    .matrix-row-track {
+      display: flex;
+      flex-direction: row-reverse; /* DOM: essential→not_relevant; visual: not_relevant→essential */
+      gap: 4px;
+    }
+    .matrix-row-track .matrix-cell {
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0;
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+    }
+    .matrix-row-track .matrix-dot { display: none; }
+    .matrix-cell-num {
+      display: block;
+      font-size: 13px;
+      color: var(--craie);
+    }
+    .matrix-row-track .matrix-cell:hover {
+      border-color: var(--cuivre);
+      background: rgba(182, 106, 62, 0.06);
+    }
+    .matrix-row-track .matrix-cell:has(input:checked) {
+      background: var(--cuivre);
+      border-color: var(--cuivre);
+    }
+    .matrix-row-track .matrix-cell:has(input:checked) .matrix-cell-num {
+      color: var(--charbon);
+      font-weight: 700;
+    }
+    .matrix-row-extremes {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--fumee);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

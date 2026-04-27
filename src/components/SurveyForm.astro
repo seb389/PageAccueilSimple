@@ -114,15 +114,22 @@ const numberedSections = content.sections.map(section => ({
                     <div class="matrix-col-label">{col.label}</div>
                   ))}
                   {q.rows.map(row => (
-                    <>
+                    <div class="matrix-row">
                       <div class="matrix-row-label">{row.label}</div>
-                      {q.columns.map(col => (
-                        <label class="matrix-cell">
-                          <input type="radio" name={row.key} value={col.value} required={q.required} />
-                          <span class="matrix-dot" aria-label={col.label}></span>
-                        </label>
-                      ))}
-                    </>
+                      <div class="matrix-row-track">
+                        {q.columns.map((col, i) => (
+                          <label class="matrix-cell">
+                            <input type="radio" name={row.key} value={col.value} required={q.required} />
+                            <span class="matrix-dot" aria-label={col.label}></span>
+                            <span class="matrix-cell-num" aria-hidden="true">{q.columns.length - i}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div class="matrix-row-extremes" aria-hidden="true">
+                        <span>{q.columns[q.columns.length - 1].label}</span>
+                        <span>{q.columns[0].label}</span>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
