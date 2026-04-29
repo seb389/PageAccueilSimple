@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import SurveyForm from '../../components/SurveyForm.astro';
 import TeaserSondage from '../../components/TeaserSondage.astro';
+import Footer from '../../components/Footer.astro';
 import { useTranslations } from '../../i18n';
 import { isSurveyLaunched } from '../../launch';
 
@@ -16,7 +17,13 @@ const showSurvey = preview === 'survey'
     ? false
     : isSurveyLaunched();
 ---
-<Base title={tr.title_sondage} lang="en">
+<Base
+  title={tr.title_sondage}
+  lang="en"
+  ogTitle="Lacet · Quebec cyclist survey"
+  ogDescription="Help us build a Quebec-based premium road bike rental service. 3-minute survey — your voice counts."
+  ogImage="https://www.lacet.ca/og-image-sondage.jpg"
+>
 
   <header class="corner">
     <div class="corner-left">
@@ -37,10 +44,6 @@ const showSurvey = preview === 'survey'
     {showSurvey ? <SurveyForm lang="en" /> : <TeaserSondage lang="en" />}
   </main>
 
-  <footer>
-    <span>{tr.footer_copy}</span>
-    <span class="footer-center"><a href={tr.nl_privacy_href}>{tr.footer_privacy}</a></span>
-    <span>{tr.footer_domain}</span>
-  </footer>
+  <Footer lang="en" />
 
 </Base>

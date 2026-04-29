@@ -9,7 +9,7 @@ export const ui = {
     region:             'Québec',
     tagline_left:       'Location',
     tagline_right:      'Vélo',
-    status:             'Prochainement',
+    status:             'Printemps 2027',
     contact_label:      'Pour information',
     footer_copy:        '© 2026 Lacet',
     footer_domain:      'lacet.ca',
@@ -82,16 +82,11 @@ export const ui = {
     thanks_share_sms:      'Partager par texto',
     thanks_share_email:    'Partager par courriel',
     thanks_share_url:      'https://www.lacet.ca/sondage',
-    thanks_share_sms_body: 'Salut! Lacet prépare un service de location de vélos de route haut de gamme au Québec. Ils sondent les cyclistes pour peaufiner le projet — et il y a un concours pour gagner un Garmin Varia 820 : https://www.lacet.ca/sondage',
+    thanks_share_sms_body: 'Salut! Lacet prépare un service québécois de location de vélos de route haut de gamme. Ils sondent les cyclistes pour finaliser le projet — il y a un Garmin Varia 820 à gagner. Ça prend 3 minutes : https://www.lacet.ca/sondage',
     thanks_share_mail_subject: 'Sondage Lacet — vélos de route haut de gamme au Québec',
-    thanks_share_mail_body: 'Salut!\n\nJe viens de répondre à un sondage pour Lacet, un projet québécois de location de vélos de route haut de gamme. Ça prend 3 minutes et il y a un concours pour gagner un Garmin Varia 820 (419 $).\n\nVoici le lien : https://www.lacet.ca/sondage\n\nBonne route!',
+    thanks_share_mail_body: 'Salut!\n\nJe viens de répondre à un sondage pour Lacet, un projet québécois de location de vélos de route haut de gamme.\n\nIls cherchent à comprendre ce que les cyclistes d\'ici veulent vraiment d\'un service comme ça avant de lancer la première saison au printemps 2027. Ça prend 3 minutes et il y a un concours pour gagner un Garmin Varia RearVue 820 (419 $).\n\nVoici le lien : https://www.lacet.ca/sondage\n\nBonne route!',
 
     // Bloc suivre
-    thanks_follow_title: 'Suivez le projet',
-    thanks_follow_body:  'On va publier la synthèse des grandes tendances du sondage cet été, et tenir au courant ceux et celles qui suivent Lacet de l\'évolution du projet.',
-    thanks_follow_facebook: 'Facebook',
-    thanks_follow_facebook_href: 'https://www.facebook.com/lacet.ca',
-    thanks_follow_soon: '(Instagram et Strava à venir)',
 
     // Politique de confidentialité
     privacy_title:      'Politique de confidentialité',
@@ -105,7 +100,7 @@ export const ui = {
     region:             'Québec',
     tagline_left:       'Rental',
     tagline_right:      'Bike',
-    status:             'Coming Soon',
+    status:             'Spring 2027',
     contact_label:      'For information',
     footer_copy:        '© 2026 Lacet',
     footer_domain:      'lacet.ca',
@@ -178,16 +173,11 @@ export const ui = {
     thanks_share_sms:      'Share by text',
     thanks_share_email:    'Share by email',
     thanks_share_url:      'https://www.lacet.ca/en/sondage',
-    thanks_share_sms_body: 'Hey! Lacet is building a premium road bike rental service in Quebec. They\'re surveying cyclists to refine the project — and there\'s a contest to win a Garmin Varia 820: https://www.lacet.ca/en/sondage',
+    thanks_share_sms_body: 'Hey! Lacet is building a Quebec-based premium road bike rental service. They\'re surveying cyclists to finalize the project — there\'s a Garmin Varia 820 to be won. Takes 3 minutes: https://www.lacet.ca/en/sondage',
     thanks_share_mail_subject: 'Lacet survey — premium road bikes in Quebec',
-    thanks_share_mail_body: 'Hi!\n\nI just answered a survey for Lacet, a Quebec-based project for premium road bike rentals. Takes 3 minutes and there\'s a contest to win a Garmin Varia 820 ($419).\n\nHere\'s the link: https://www.lacet.ca/en/sondage\n\nRide safe!',
+    thanks_share_mail_body: 'Hi!\n\nI just answered a survey for Lacet, a Quebec-based project for premium road bike rentals.\n\nThey\'re trying to understand what cyclists here actually want from a service like this before launching their first season in spring 2027. Takes 3 minutes and there\'s a contest to win a Garmin Varia RearVue 820 ($419).\n\nHere\'s the link: https://www.lacet.ca/en/sondage\n\nRide safe!',
 
     // Follow block
-    thanks_follow_title: 'Follow the project',
-    thanks_follow_body:  'We\'ll publish the survey\'s key findings this summer, and keep our followers updated on the project\'s progress.',
-    thanks_follow_facebook: 'Facebook',
-    thanks_follow_facebook_href: 'https://www.facebook.com/lacet.ca',
-    thanks_follow_soon: '(Instagram and Strava coming soon)',
 
     // Privacy policy
     privacy_title:      'Privacy Policy',

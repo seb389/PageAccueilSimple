@@ -3,8 +3,23 @@ interface Props {
   title: string;
   lang: 'fr' | 'en';
   theme?: 'dark' | 'light';
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
 }
-const { title, lang, theme = 'dark' } = Astro.props;
+const {
+  title,
+  lang,
+  theme = 'dark',
+  ogTitle,
+  ogDescription,
+  ogImage,
+  ogType = 'website',
+} = Astro.props;
+
+// Canonical URL for OG sharing — strips query params like ?preview=...
+const canonicalUrl = Astro.url.origin + Astro.url.pathname;
 
 // Meta Pixel — Pixel ID is injected at build time via PUBLIC_META_PIXEL_ID env var.
 // Empty = pixel + consent banner are disabled entirely.
@@ -18,6 +33,19 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
 <title>{title}</title>
 <meta name="theme-color" content={theme === 'light' ? '#fafaf7' : '#0f0f0f'} />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+{ogTitle && (
+  <>
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={ogTitle} />
+    {ogDescription && <meta property="og:description" content={ogDescription} />}
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:width" content="1200" />}
+    {ogImage && <meta property="og:image:height" content="630" />}
+    <meta property="og:locale" content={lang === 'fr' ? 'fr_CA' : 'en_CA'} />
+  </>
+)}
 <style is:global>
   @font-face {
     font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap;
@@ -587,6 +615,7 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     width: 100%;
     margin: 0 auto;
     padding: 20px 0;
+    text-align: center;
     animation: fadeUp 1.2s 0.3s ease-out both;
   }
   .thanks-hero {
@@ -655,39 +684,62 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     border-left: 2px solid var(--line);
     padding-left: 18px;
   }
-  .thanks-share-buttons {
+  .thanks-share-primary {
+    margin-top: 18px;
+  }
+  .thanks-share-fb {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 28px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--craie);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: border-color 0.25s ease, color 0.25s ease;
+  }
+  .thanks-share-fb:hover,
+  .thanks-share-fb:focus-visible {
+    border-color: var(--cuivre);
+    color: var(--cuivre);
+    text-decoration: none;
+    outline: none;
+  }
+  .thanks-share-fb svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+    transition: transform 0.25s ease;
+  }
+  .thanks-share-fb:hover svg,
+  .thanks-share-fb:focus-visible svg {
+    transform: translateY(-1px);
+  }
+  .thanks-share-secondary {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 16px;
+    justify-content: center;
+    gap: 22px;
+    margin-top: 14px;
   }
-  .thanks-share-btn {
+  .thanks-share-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 16px;
-    border: 1px solid var(--line);
-    border-radius: 3px;
+    font-size: 13px;
+    color: var(--fumee);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .thanks-share-link:hover {
     color: var(--craie);
     text-decoration: none;
-    font-size: 13px;
-    letter-spacing: 0.04em;
-    background: transparent;
-    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
   }
-  .thanks-share-btn:hover {
-    border-color: var(--cuivre);
-    color: var(--cuivre);
-    background: rgba(182, 106, 62, 0.04);
-    text-decoration: none;
-  }
-  .thanks-share-icon {
-    font-size: 15px;
-  }
-  .thanks-follow-soon {
-    color: var(--fumee);
-    font-size: 13px;
-  }
+  .thanks-share-link svg { display: block; flex-shrink: 0; }
   .thanks-back-wrap {
     text-align: center;
     margin: 24px 0 32px;
@@ -708,8 +760,8 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     border-color: var(--craie);
   }
   @media (max-width: 540px) {
-    .thanks-share-buttons { flex-direction: column; }
-    .thanks-share-btn { justify-content: center; }
+    .thanks-share-fb { padding: 14px 20px; }
+    .thanks-share-secondary { gap: 18px; }
   }
 
   /* ── Teaser sondage (pré-lancement) ── */
@@ -1454,6 +1506,20 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     flex: 1;
     text-align: center;
   }
+  footer .footer-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+  }
+  footer .footer-social {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fumee);
+    transition: color 0.25s ease, transform 0.25s ease;
+  }
+  footer .footer-social:hover { color: var(--craie); transform: translateY(-1px); }
+  footer .footer-social svg { display: block; }
 
   /* ── Survey ── */
   .survey {
