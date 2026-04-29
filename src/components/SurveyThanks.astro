@@ -25,7 +25,16 @@ const mailShareHref = `mailto:?subject=${shareMailSubjEnc}&body=${shareMailBodyE
   </section>
 
   <section class="thanks-block thanks-contest" data-block="contest" hidden>
-    <h2>{tr.thanks_contest_title}</h2>
+    <h2>
+      <svg class="thanks-block-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="20 12 20 22 4 22 4 12" />
+        <rect x="2" y="7" width="20" height="5" />
+        <line x1="12" y1="22" x2="12" y2="7" />
+        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+      </svg>
+      {tr.thanks_contest_title}
+    </h2>
     <p>
       {tr.thanks_contest_body} <strong>{tr.thanks_contest_prize}</strong> {tr.thanks_contest_value}
     </p>
@@ -39,12 +48,26 @@ const mailShareHref = `mailto:?subject=${shareMailSubjEnc}&body=${shareMailBodyE
   </section>
 
   <section class="thanks-block thanks-newsletter" data-block="newsletter" hidden>
-    <h2>{tr.thanks_nl_title}</h2>
+    <h2>
+      <svg class="thanks-block-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+      </svg>
+      {tr.thanks_nl_title}
+    </h2>
     <p>{tr.thanks_nl_body}</p>
   </section>
 
   <section class="thanks-block thanks-share">
-    <h2>{tr.thanks_share_title}</h2>
+    <h2>
+      <svg class="thanks-block-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="18.5" cy="17.5" r="3.5" />
+        <circle cx="5.5" cy="17.5" r="3.5" />
+        <circle cx="15" cy="5" r="1" />
+        <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+      </svg>
+      {tr.thanks_share_title}
+    </h2>
     <p>{tr.thanks_share_body}</p>
     <div class="thanks-share-primary">
       <a class="thanks-share-fb" href={fbShareHref} target="_blank" rel="noopener noreferrer" data-share="facebook">

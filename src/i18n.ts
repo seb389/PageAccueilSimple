@@ -61,7 +61,7 @@ export const ui = {
     thanks_survey_back:  '← Retour à l\'accueil',
 
     // Bloc concours
-    thanks_contest_title: 'Vous êtes inscrit·e au tirage 🎯',
+    thanks_contest_title: 'Vous êtes inscrit·e au tirage',
     thanks_contest_body:  'Vous courez la chance de gagner un',
     thanks_contest_prize: 'Garmin Varia RearVue 820',
     thanks_contest_value: 'd\'une valeur de 419,99 $.',
@@ -72,7 +72,7 @@ export const ui = {
     thanks_contest_rules_href: '/concours-reglement',
 
     // Bloc infolettre
-    thanks_nl_title: 'Vous recevrez nos prochaines nouvelles 📬',
+    thanks_nl_title: 'Vous recevrez nos prochaines nouvelles',
     thanks_nl_body:  'Vous serez parmi les premier·ère·s informé·e·s lors de l\'ouverture du service. Pas de spam, jamais — seulement les annonces qui comptent.',
 
     // Bloc partage
@@ -152,7 +152,7 @@ export const ui = {
     thanks_survey_back:  '← Back to home',
 
     // Contest block
-    thanks_contest_title: 'You\'re entered in the draw 🎯',
+    thanks_contest_title: 'You\'re entered in the draw',
     thanks_contest_body:  'You have a chance to win a',
     thanks_contest_prize: 'Garmin Varia RearVue 820',
     thanks_contest_value: 'with a retail value of $419.99.',
@@ -163,7 +163,7 @@ export const ui = {
     thanks_contest_rules_href: '/en/contest-rules',
 
     // Newsletter block
-    thanks_nl_title: 'You\'ll hear from us 📬',
+    thanks_nl_title: 'You\'ll hear from us',
     thanks_nl_body:  'You\'ll be among the first to know when the service launches. No spam, ever — only the announcements that matter.',
 
     // Sharing block
