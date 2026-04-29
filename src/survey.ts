@@ -56,7 +56,7 @@ const FR: SurveyContent = {
     heading: "Repensons la location de vélo de route au Québec",
     paragraphs: [
       "Nous explorons la mise sur pied d'un service québécois de location de vélos de route haut de gamme, avec livraison et entretien inclus. Avant de concrétiser le projet, nous souhaitons bien comprendre les besoins et les attentes des cyclistes d'ici.",
-      "Ce sondage prend environ 3 à 5 minutes. Merci du temps que vous y consacrez — chaque réponse compte et nous aidera à bâtir un service qui vous ressemble.",
+      "Ce sondage prend environ 3 à 5 minutes. Vous pouvez aussi participer à un tirage à la fin du sondage si vous le souhaitez. Merci du temps que vous y consacrez — chaque réponse compte et nous aidera à bâtir un service qui vous ressemble.",
     ],
     signature: "— L'équipe LACET",
     timeEstimate: "3 à 5 minutes",
@@ -389,7 +389,7 @@ const EN: SurveyContent = {
     heading: "Rethinking road bike rental in Quebec",
     paragraphs: [
       "We are exploring the launch of a Quebec-based premium road bike rental service, with delivery and maintenance included. Before making it a reality, we want to understand the needs and expectations of cyclists here.",
-      "This survey takes about 3 to 5 minutes. Thank you for your time — every answer matters and will help us build a service that fits you.",
+      "This survey takes about 3 to 5 minutes. You can also enter a prize draw at the end if you'd like. Thank you for your time — every answer matters and will help us build a service that fits you.",
     ],
     signature: "— The LACET team",
     timeEstimate: "3 to 5 minutes",

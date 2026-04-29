@@ -1,11 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
 import SurveyForm from '../components/SurveyForm.astro';
+import TeaserSondage from '../components/TeaserSondage.astro';
 import { useTranslations } from '../i18n';
+import { isSurveyLaunched } from '../launch';
 
 export const prerender = false;
 
 const tr = useTranslations('fr');
+
+// Conditional render: teaser before launch, survey after.
+// `?preview=teaser` or `?preview=survey` lets us preview either mode without changing the date.
+const preview = new URL(Astro.request.url).searchParams.get('preview');
+const showSurvey = preview === 'survey'
+  ? true
+  : preview === 'teaser'
+    ? false
+    : isSurveyLaunched();
 ---
 <Base title={tr.title_sondage} lang="fr">
 
@@ -25,7 +36,7 @@ const tr = useTranslations('fr');
   </header>
 
   <main>
-    <SurveyForm lang="fr" />
+    {showSurvey ? <SurveyForm lang="fr" /> : <TeaserSondage lang="fr" />}
   </main>
 
   <footer>

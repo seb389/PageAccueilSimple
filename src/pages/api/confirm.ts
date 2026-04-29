@@ -20,7 +20,7 @@ export const GET: APIRoute = async ({ url, redirect, request }) => {
   }
 
   const { email, lang } = data;
-  const source = data.source === 'survey' ? 'survey' : 'home';
+  const source = data.source === 'survey' || data.source === 'teaser' ? data.source : 'home';
   const trackingConsent = data.trackingConsent === 'accepted' ? 'accepted' : 'declined';
   const eventId = typeof data.eventId === 'string' && data.eventId ? data.eventId : undefined;
   const listId = Number(lang === 'fr' ? env.BREVO_LIST_ID_FR : env.BREVO_LIST_ID_EN);

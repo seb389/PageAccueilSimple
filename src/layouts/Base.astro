@@ -712,6 +712,137 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     .thanks-share-btn { justify-content: center; }
   }
 
+  /* ── Teaser sondage (pré-lancement) ── */
+  .teaser {
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px 0;
+    animation: fadeUp 1.2s 0.3s ease-out both;
+  }
+  .teaser-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px 8px 8px;
+    border: 1px solid rgba(182, 106, 62, 0.35);
+    border-radius: 999px;
+    background: rgba(182, 106, 62, 0.08);
+    margin-bottom: 28px;
+  }
+  .teaser-countdown {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    padding: 4px 10px;
+    background: var(--cuivre);
+    color: var(--charbon);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .teaser-banner-text {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--craie);
+  }
+  .teaser-banner-sep { color: var(--fumee); margin: 0 2px; }
+  .teaser-h1 {
+    font-size: clamp(28px, 4.5vw, 42px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--craie);
+    line-height: 1.15;
+    margin: 0 0 16px;
+  }
+  .teaser-tagline {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--craie);
+    margin: 0 0 32px;
+  }
+  .teaser-context {
+    margin: 0 0 36px;
+  }
+  .teaser-context p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: rgba(244, 241, 236, 0.85);
+    margin: 0 0 14px;
+  }
+  .teaser-form-wrap {
+    margin: 0 0 36px;
+    padding: 4px 0 0;
+  }
+  /* Override the inner NewsletterForm spacing inside the teaser */
+  .teaser-form-wrap .newsletter {
+    margin-top: 0;
+    max-width: none;
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 24px 22px;
+    background: rgba(244, 241, 236, 0.02);
+  }
+  .teaser-form-wrap .nl-heading {
+    text-align: left;
+  }
+  .teaser-form-wrap .nl-input-group {
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .teaser-form-wrap .nl-consent {
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .teaser-form-wrap .nl-description {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(244, 241, 236, 0.85);
+    margin: 4px 0 18px;
+  }
+  .teaser-form-footnote {
+    margin: 12px 4px 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--fumee);
+  }
+  .teaser-block {
+    margin: 0 0 28px;
+  }
+  .teaser-block h2 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--craie);
+    margin: 0 0 10px;
+  }
+  .teaser-block p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(244, 241, 236, 0.85);
+    margin: 0;
+  }
+  .teaser-contest {
+    padding: 18px 20px;
+    border-left: 2px solid var(--cuivre);
+    background: rgba(182, 106, 62, 0.04);
+    border-radius: 0 3px 3px 0;
+  }
+  @media (max-width: 540px) {
+    .teaser-banner {
+      width: fit-content;
+      max-width: 100%;
+      padding: 6px 12px 6px 6px;
+    }
+    .teaser-form-wrap .newsletter { padding: 20px 16px; }
+    .teaser-contest { padding: 16px 14px; }
+  }
+
   /* ── Admin pages ── */
   .admin-page {
     width: 100%;
@@ -1684,8 +1815,8 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     padding: 10px 0;
   }
   .survey-nl-fields {
-    margin-top: 16px;
-    padding-left: 28px;
+    margin: 16px auto 0;
+    max-width: 420px;
   }
   .survey-nl-fields .nl-input-group {
     max-width: 420px;
@@ -1696,13 +1827,13 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
 
   /* Contest section */
   .survey-contest-fields {
-    margin-top: 16px;
-    padding-left: 28px;
+    margin: 16px auto 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
     max-width: 420px;
   }
+  .survey-contest-fields[hidden] { display: none; }
   .contest-row input {
     width: 100%;
     background: transparent;
@@ -1790,8 +1921,6 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     .scale-track { gap: 2px; }
     .scale-dot { height: 38px; font-size: 11px; }
     .survey-newsletter { padding: 22px 18px; }
-    .survey-nl-fields { padding-left: 0; }
-    .survey-contest-fields { padding-left: 0; }
 
     /* Matrix → barre 1-4 par service sous 540px (pas pertinent ← → indispensable) */
     .q-matrix { overflow-x: visible; }

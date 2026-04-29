@@ -3,18 +3,25 @@ import { useTranslations, type Lang } from '../i18n';
 
 interface Props {
   lang: Lang;
+  source?: 'home' | 'survey' | 'teaser';
+  title?: string;
+  prompt?: string;
+  description?: string;
 }
-const { lang } = Astro.props;
+const { lang, source = 'home', title, prompt, description } = Astro.props;
 const tr = useTranslations(lang);
+const heading = title ?? tr.nl_label;
+const subheading = prompt ?? tr.nl_prompt;
 ---
 
 <section class="newsletter" aria-labelledby="nl-label">
   <div class="nl-heading">
-    <span class="nl-label" id="nl-label">{tr.nl_label}</span>
-    <span class="nl-prompt">{tr.nl_prompt}</span>
+    <span class="nl-label" id="nl-label">{heading}</span>
+    <span class="nl-prompt">{subheading}</span>
   </div>
+  {description && <p class="nl-description">{description}</p>}
 
-  <form class="nl-form" data-lang={lang} novalidate>
+  <form class="nl-form" data-lang={lang} data-source={source} novalidate>
     <div class="nl-input-group">
       <input
         type="email"
@@ -67,6 +74,7 @@ const tr = useTranslations(lang);
   const errorEl  = form.querySelector('.nl-error');
   const success  = document.querySelector('.nl-success');
   const lang     = form.dataset.lang || 'fr';
+  const source   = form.dataset.source || 'home';
 
   function showError(code) {
     errorEl.textContent = messages[code] || messages.default;
@@ -99,7 +107,7 @@ const tr = useTranslations(lang);
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email, consent: true, lang, source: 'home', tracking_consent: trackingConsent, event_id: eventId }),
+        body: JSON.stringify({ email, consent: true, lang, source, tracking_consent: trackingConsent, event_id: eventId }),
       });
       const data = await res.json().catch(() => ({ ok: false, error: 'service_error' }));
 

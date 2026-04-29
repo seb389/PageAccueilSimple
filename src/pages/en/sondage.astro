@@ -1,11 +1,20 @@
 ---
 import Base from '../../layouts/Base.astro';
 import SurveyForm from '../../components/SurveyForm.astro';
+import TeaserSondage from '../../components/TeaserSondage.astro';
 import { useTranslations } from '../../i18n';
+import { isSurveyLaunched } from '../../launch';
 
 export const prerender = false;
 
 const tr = useTranslations('en');
+
+const preview = new URL(Astro.request.url).searchParams.get('preview');
+const showSurvey = preview === 'survey'
+  ? true
+  : preview === 'teaser'
+    ? false
+    : isSurveyLaunched();
 ---
 <Base title={tr.title_sondage} lang="en">
 
@@ -25,7 +34,7 @@ const tr = useTranslations('en');
   </header>
 
   <main>
-    <SurveyForm lang="en" />
+    {showSurvey ? <SurveyForm lang="en" /> : <TeaserSondage lang="en" />}
   </main>
 
   <footer>

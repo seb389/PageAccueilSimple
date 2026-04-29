@@ -21,7 +21,7 @@ export const POST: APIRoute = async ({ request }) => {
   const email   = (body.email ?? '').trim().toLowerCase();
   const consent = body.consent === true;
   const lang    = body.lang === 'en' ? 'en' : 'fr';
-  const source  = body.source === 'survey' ? 'survey' : 'home';
+  const source  = body.source === 'survey' || body.source === 'teaser' ? body.source : 'home';
   const trackingConsent = body.tracking_consent === 'accepted' ? 'accepted' : 'declined';
   const eventId = typeof body.event_id === 'string' ? body.event_id : '';
 
