@@ -76,7 +76,7 @@ export const ui = {
     thanks_nl_body:  'Vous serez parmi les premier·ère·s informé·e·s lors de l\'ouverture du service. Pas de spam, jamais — seulement les annonces qui comptent.',
 
     // Bloc partage
-    thanks_share_title: 'Connaissez un·e ami·e cycliste ?',
+    thanks_share_title: 'Connaissez-vous un·e ami·e cycliste ?',
     thanks_share_body:  'Plus on a de réponses, plus le service qu\'on bâtira sera juste. Partager le sondage prend dix secondes et fait une vraie différence.',
     thanks_share_facebook: 'Partager sur Facebook',
     thanks_share_sms:      'Partager par texto',
