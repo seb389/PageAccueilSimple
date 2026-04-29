@@ -17,7 +17,7 @@ const subheading = prompt ?? tr.nl_prompt;
 <section class="newsletter" aria-labelledby="nl-label">
   <div class="nl-heading">
     <span class="nl-label" id="nl-label">{heading}</span>
-    <span class="nl-prompt">{subheading}</span>
+    <span class="nl-prompt"><slot name="icon" />{subheading}</span>
   </div>
   {description && <p class="nl-description">{description}</p>}
 

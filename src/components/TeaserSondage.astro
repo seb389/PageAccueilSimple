@@ -16,37 +16,32 @@ const launchDateLabel = lang === 'fr'
 const copy = lang === 'fr' ? {
   bannerOpening:  "Ouverture du sondage",
   bannerSeparator:"—",
-  h1:             "Repensons la location de vélo de route au Québec",
-  tagline:        `Avant de bâtir, on écoute. Notre sondage ouvre le ${launchDateLabel}.`,
-  context: [
-    "Louer un vélo de route qui vibre vraiment au Québec, ce n'est pas évident aujourd'hui. Que ce soit pour un voyage, une course, un week-end de découverte ou simplement le plaisir d'essayer un modèle de rêve avant de l'acheter, l'offre actuelle laisse beaucoup de place à autre chose.",
-    "Nous explorons un service où la livraison à domicile, l'entretien, l'assurance et le bike fit sont inclus dans la location — pour que l'expérience ressemble enfin à une vraie sortie de cycliste, pas à un dépannage. Avant de mettre le tout en place, nous voulons d'abord vous entendre.",
-  ],
-  formPrompt:     "Soyez avisé·e dès l'ouverture du sondage",
-  formDescription:`Le ${launchDateLabel}, nous lancerons un court sondage de 3 à 5 minutes. Laissez-nous votre courriel pour recevoir le lien dès la première heure et participer aux décisions qui façonneront Lacet.`,
-  formFootnote:   "Nous n'utiliserons votre courriel que pour vous aviser de l'ouverture du sondage et, si vous le souhaitez, vous tenir au courant du projet. Désinscription en un clic, en tout temps.",
-  contestTitle:   "Un tirage à la fin du sondage",
-  contestBody:    `Tous les répondants pourront participer à un tirage exclusif lié à un produit ou service vélo haut de gamme. Les détails seront publiés à l'ouverture du sondage le ${launchDateLabel}.`,
+  h1:             "Le vélo de route, autrement",
+  tagline:        "Avant de bâtir, on écoute.",
+  context:        "Un service québécois de location de vélos de route haut de gamme. Livraison, entretien et assurance inclus — pour que la location ressemble enfin à une vraie sortie de cycliste, pas à un dépannage.",
+  formPrompt:     "Soyez avisé·e à l'ouverture",
+  contestBody:    "Un tirage parmi les répondants.",
 } : {
   bannerOpening:  "Survey opens",
   bannerSeparator:"—",
-  h1:             "Rethinking road bike rental in Quebec",
-  tagline:        `Before we build, we listen. Our survey opens on ${launchDateLabel}.`,
-  context: [
-    "Renting a road bike that truly lives up to Quebec's roads isn't easy today. Whether for travel, a race, a discovery weekend, or simply the pleasure of trying a dream bike before buying, today's options leave plenty of room for something better.",
-    "We're exploring a service where home delivery, maintenance, insurance and bike fit are all included in the rental — so the experience finally feels like a real cyclist's ride, not a workaround. Before we put it together, we want to hear from you first.",
-  ],
-  formPrompt:     "Get notified when the survey opens",
-  formDescription:`On ${launchDateLabel}, we'll launch a short 3-to-5-minute survey. Leave us your email to receive the link as soon as it goes live and help shape Lacet's decisions.`,
-  formFootnote:   "We will only use your email to notify you of the survey opening and, if you wish, to keep you updated on the project. One-click unsubscribe, anytime.",
-  contestTitle:   "A draw at the end of the survey",
-  contestBody:    `All respondents will be eligible for an exclusive draw linked to a premium cycling product or service. Details will be published when the survey opens on ${launchDateLabel}.`,
+  h1:             "Road cycling, reimagined",
+  tagline:        "Before we build, we listen.",
+  context:        "A Quebec-based premium road bike rental service. Delivery, maintenance and insurance included — so the rental finally feels like a real cyclist's ride, not a workaround.",
+  formPrompt:     "Get notified at launch",
+  contestBody:    "A draw among respondents.",
 };
 
 const dayPrefix = lang === 'fr' ? 'J' : 'D';
 ---
 
 <section class="teaser" data-launch-iso={SURVEY_LAUNCH_DATE.toISOString()} data-day-prefix={dayPrefix}>
+  <h1 class="teaser-h1">{copy.h1}</h1>
+  <p class="teaser-tagline">{copy.tagline}</p>
+
+  <div class="teaser-context">
+    <p>{copy.context}</p>
+  </div>
+
   <div class="teaser-banner">
     <span class="teaser-countdown" data-countdown>{dayPrefix}-{days}</span>
     <span class="teaser-banner-text">
@@ -54,27 +49,29 @@ const dayPrefix = lang === 'fr' ? 'J' : 'D';
     </span>
   </div>
 
-  <h1 class="teaser-h1">{copy.h1}</h1>
-  <p class="teaser-tagline">{copy.tagline}</p>
-
-  <div class="teaser-context">
-    {copy.context.map(p => <p>{p}</p>)}
-  </div>
-
   <div class="teaser-form-wrap">
     <NewsletterForm
       lang={lang}
       source="teaser"
       prompt={copy.formPrompt}
-      description={copy.formDescription}
-    />
-    <p class="teaser-form-footnote">{copy.formFootnote}</p>
+    >
+      <svg slot="icon" class="thanks-block-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+      </svg>
+    </NewsletterForm>
   </div>
 
-  <div class="teaser-block teaser-contest">
-    <h2>{copy.contestTitle}</h2>
-    <p>{copy.contestBody}</p>
-  </div>
+  <p class="teaser-contest">
+    <svg class="thanks-block-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="20 12 20 22 4 22 4 12" />
+      <rect x="2" y="7" width="20" height="5" />
+      <line x1="12" y1="22" x2="12" y2="7" />
+      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+    </svg>
+    {copy.contestBody}
+  </p>
 </section>
 
 <script is:inline>

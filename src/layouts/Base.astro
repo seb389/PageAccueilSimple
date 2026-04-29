@@ -771,21 +771,26 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
 
   /* ── Teaser sondage (pré-lancement) ── */
   .teaser {
-    max-width: 680px;
+    max-width: 720px;
     width: 100%;
     margin: 0 auto;
     padding: 24px 0;
+    text-align: center;
     animation: fadeUp 1.2s 0.3s ease-out both;
   }
   .teaser-banner {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
+    width: 100%;
+    max-width: 460px;
+    box-sizing: border-box;
     padding: 8px 14px 8px 8px;
     border: 1px solid rgba(182, 106, 62, 0.35);
     border-radius: 999px;
     background: rgba(182, 106, 62, 0.08);
-    margin-bottom: 28px;
+    margin: 0 auto 24px;
   }
   .teaser-countdown {
     display: inline-flex;
@@ -830,7 +835,8 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     margin: 0 0 14px;
   }
   .teaser-form-wrap {
-    margin: 0 0 36px;
+    max-width: 460px;
+    margin: 0 auto 36px;
     padding: 4px 0 0;
   }
   /* Override the inner NewsletterForm spacing inside the teaser */
@@ -842,9 +848,6 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     border-radius: 4px;
     padding: 24px 22px;
     background: rgba(244, 241, 236, 0.02);
-  }
-  .teaser-form-wrap .nl-heading {
-    text-align: left;
   }
   .teaser-form-wrap .nl-input-group {
     max-width: 420px;
@@ -861,12 +864,6 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     line-height: 1.7;
     color: rgba(244, 241, 236, 0.85);
     margin: 4px 0 18px;
-  }
-  .teaser-form-footnote {
-    margin: 12px 4px 0;
-    font-size: 12px;
-    line-height: 1.6;
-    color: var(--fumee);
   }
   .teaser-block {
     margin: 0 0 28px;
@@ -885,6 +882,8 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     margin: 0;
   }
   .teaser-contest {
+    max-width: 460px;
+    margin: 24px auto 0;
     padding: 18px 20px;
     border-left: 2px solid var(--cuivre);
     background: rgba(182, 106, 62, 0.04);
