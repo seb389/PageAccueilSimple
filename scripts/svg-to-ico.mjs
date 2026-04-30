@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const svgBuf = readFileSync('public/favicon-v2.svg');
+const svgBuf = readFileSync('public/favicon.svg');
 const sizes = [16, 32, 48];
 
 const pngs = await Promise.all(
