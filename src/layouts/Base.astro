@@ -1187,6 +1187,167 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     border-bottom-color: var(--cuivre);
   }
 
+  /* Admin home dashboard */
+  .admin-home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+    margin-top: 24px;
+  }
+  .admin-home-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 28px 24px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--craie);
+    text-decoration: none;
+    background: transparent;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  }
+  .admin-home-card:hover {
+    border-color: var(--cuivre);
+    background: rgba(182, 106, 62, 0.04);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+  .admin-home-icon {
+    color: var(--cuivre);
+    margin-bottom: 4px;
+  }
+  .admin-home-icon svg { display: block; }
+  .admin-home-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--craie);
+  }
+  .admin-home-desc {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--fumee);
+  }
+
+  /* Admin line chart (analytics) */
+  .line-chart-wrap {
+    position: relative;
+    padding: 14px 0 0;
+  }
+  .line-chart {
+    display: block;
+    width: 100%;
+    height: 200px;
+  }
+  .chart-line {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .chart-line-pv { stroke: var(--cuivre); }
+  .chart-line-uq {
+    stroke: var(--fumee);
+    stroke-dasharray: 4 4;
+    stroke-width: 1.5;
+  }
+  .chart-axis,
+  .chart-grid {
+    stroke: var(--line);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .chart-grid-mid { stroke-dasharray: 2 4; opacity: 0.6; }
+  .chart-max {
+    position: absolute;
+    top: 0;
+    right: 4px;
+    font-size: 11px;
+    color: var(--fumee);
+    font-family: 'Menlo', 'Consolas', monospace;
+  }
+  .chart-x-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--fumee);
+    letter-spacing: 0.04em;
+  }
+  .chart-legend {
+    display: flex;
+    gap: 22px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--fumee);
+  }
+  .chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-swatch {
+    display: inline-block;
+    width: 18px;
+    height: 2px;
+    background: var(--cuivre);
+    vertical-align: middle;
+  }
+  .chart-swatch-uq {
+    background: transparent;
+    border-top: 1.5px dashed var(--fumee);
+    height: 0;
+  }
+  .chart-hit {
+    fill: transparent;
+    cursor: crosshair;
+    transition: fill 0.15s ease;
+  }
+  .chart-hit:hover {
+    fill: rgba(182, 106, 62, 0.06);
+  }
+  .chart-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: rgba(15, 15, 15, 0.94);
+    color: #f4f1ec;
+    border-radius: 3px;
+    padding: 8px 11px;
+    font-size: 11px;
+    line-height: 1.55;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  }
+  .chart-tooltip strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--cuivre);
+  }
+  .chart-tooltip[hidden] { display: none; }
+
+  /* Admin inline warning */
+  .admin-warn {
+    margin: 0 0 24px;
+    padding: 14px 18px;
+    border-left: 3px solid var(--cuivre);
+    background: rgba(182, 106, 62, 0.06);
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--craie);
+  }
+  .admin-warn code {
+    font-family: 'Menlo', 'Consolas', monospace;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.06);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  .admin-warn em { font-style: italic; color: var(--fumee); }
+
   /* Inline form (used for danger buttons) */
   .inline-form {
     display: inline-block;

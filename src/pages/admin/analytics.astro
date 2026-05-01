@@ -1,0 +1,314 @@
+---
+import Base from '../../layouts/Base.astro';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email') ?? 'admin';
+
+// ─── Configuration ───────────────────────────────────────────────────
+// Required Cloudflare secrets (wrangler secret put ...):
+//   CF_ANALYTICS_API_TOKEN  — API token with "Account Analytics: Read"
+//   CF_ACCOUNT_ID           — Cloudflare account ID
+//   CF_WEB_ANALYTICS_TAG    — Web Analytics site tag (e.g. "abc123def456...")
+const apiToken = (env as any).CF_ANALYTICS_API_TOKEN as string | undefined;
+const accountId = (env as any).CF_ACCOUNT_ID as string | undefined;
+const siteTag = (env as any).CF_WEB_ANALYTICS_TAG as string | undefined;
+
+const url = new URL(Astro.request.url);
+const range = url.searchParams.get('range') === '30d' ? '30d' : '7d';
+const days = range === '30d' ? 30 : 7;
+const sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+  .toISOString().slice(0, 10);
+
+// ─── Types ───────────────────────────────────────────────────────────
+interface DailyPoint {
+  date: string;
+  pageviews: number;
+  uniques: number;
+}
+interface TopPath {
+  path: string;
+  pageviews: number;
+}
+
+let totalPageviews = 0;
+let totalUniques = 0;
+let daily: DailyPoint[] = [];
+let topPaths: TopPath[] = [];
+let queryError = '';
+let configured = Boolean(apiToken && accountId && siteTag);
+
+// ─── Fetch from Cloudflare GraphQL Analytics API ─────────────────────
+if (configured) {
+  // Two queries in one request:
+  // 1) rumPageloadEventsAdaptiveGroups → daily pageviews + unique visitors
+  // 2) rumPageloadEventsAdaptiveGroups grouped by URL path → top paths
+  const gql = `
+    query ($accountTag: String!, $siteTag: String!, $since: Date!) {
+      viewer {
+        accounts(filter: { accountTag: $accountTag }) {
+          rumDaily: rumPageloadEventsAdaptiveGroups(
+            filter: { siteTag: $siteTag, date_geq: $since }
+            orderBy: [date_ASC]
+            limit: 60
+          ) {
+            count
+            dimensions { date }
+            sum { visits }
+          }
+          rumTopPaths: rumPageloadEventsAdaptiveGroups(
+            filter: { siteTag: $siteTag, date_geq: $since }
+            orderBy: [count_DESC]
+            limit: 10
+          ) {
+            count
+            dimensions { requestPath }
+          }
+        }
+      }
+    }`;
+
+  try {
+    const res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+      method: 'POST',
+      headers: {
+        'authorization': `Bearer ${apiToken}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: gql,
+        variables: { accountTag: accountId, siteTag, since: sinceDate },
+      }),
+    });
+    const data = await res.json() as any;
+    if (data.errors?.length) {
+      queryError = data.errors.map((e: any) => e.message).join(' · ');
+    } else {
+      const account = data?.data?.viewer?.accounts?.[0];
+      const rumDaily = account?.rumDaily ?? [];
+      const rumTopPaths = account?.rumTopPaths ?? [];
+
+      daily = rumDaily.map((row: any) => ({
+        date: row.dimensions.date,
+        pageviews: row.count ?? 0,
+        uniques: row.sum?.visits ?? 0,
+      }));
+      totalPageviews = daily.reduce((a, d) => a + d.pageviews, 0);
+      totalUniques = daily.reduce((a, d) => a + d.uniques, 0);
+
+      topPaths = rumTopPaths.map((row: any) => ({
+        path: row.dimensions.requestPath || '/',
+        pageviews: row.count ?? 0,
+      }));
+    }
+  } catch (e) {
+    queryError = String((e as Error)?.message ?? e);
+  }
+}
+
+const maxDailyPv = Math.max(1, ...daily.map(d => d.pageviews));
+const maxPathPv = Math.max(1, ...topPaths.map(p => p.pageviews));
+
+// ─── Build line chart SVG points ─────────────────────────────────────
+const chartW = 600;
+const chartH = 180;
+const maxY = Math.max(1, ...daily.flatMap(d => [d.pageviews, d.uniques]));
+const xStep = daily.length > 1 ? chartW / (daily.length - 1) : 0;
+const pvPoints = daily
+  .map((d, i) => `${(i * xStep).toFixed(2)},${(chartH - (d.pageviews / maxY) * chartH).toFixed(2)}`)
+  .join(' ');
+const uqPoints = daily
+  .map((d, i) => `${(i * xStep).toFixed(2)},${(chartH - (d.uniques / maxY) * chartH).toFixed(2)}`)
+  .join(' ');
+const firstDate = daily[0]?.date ?? '';
+const lastDate  = daily[daily.length - 1]?.date ?? '';
+
+function fmtDate(iso: string) {
+  return new Date(iso + 'T00:00:00Z').toLocaleDateString('fr-CA', {
+    day: 'numeric', month: 'short',
+  });
+}
+function widthPct(n: number, max: number) {
+  return Math.round((n / max) * 100);
+}
+---
+<Base title="LACET · Admin · Analytiques" lang="fr" theme="light">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>Admin · Lacet</span>
+    </div>
+    <div class="corner-right">
+      <span class="admin-user">{userEmail}</span>
+      <a href="/cdn-cgi/access/logout?returnTo=https://lacet.ca/" class="back">Logout</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="admin-page">
+
+      <nav class="admin-nav">
+        <a href="/admin/survey">Sondage</a>
+        <a href="/admin/contest">Concours</a>
+        <a href="/admin/analytics" class="is-active">Analytiques</a>
+      </nav>
+
+      <section class="admin-section">
+        <h1 class="admin-title">Analytiques</h1>
+
+        {!configured && (
+          <div class="admin-warn">
+            <strong>Configuration manquante.</strong>
+            Définir 3 secrets via <code>wrangler secret put</code> :
+            <code>CF_ANALYTICS_API_TOKEN</code> (token avec scope <em>Account Analytics: Read</em>),
+            <code>CF_ACCOUNT_ID</code>, <code>CF_WEB_ANALYTICS_TAG</code>.
+            Activer aussi Cloudflare Web Analytics dans le dashboard et coller le snippet dans <code>Base.astro</code>.
+          </div>
+        )}
+
+        {configured && queryError && (
+          <div class="admin-warn">
+            <strong>Erreur GraphQL :</strong> {queryError}
+          </div>
+        )}
+
+        <div class="mode-toggle">
+          <a href="/admin/analytics?range=7d"  class={range === '7d'  ? 'is-active' : ''}>7 derniers jours</a>
+          <a href="/admin/analytics?range=30d" class={range === '30d' ? 'is-active' : ''}>30 derniers jours</a>
+        </div>
+
+        <div class="admin-stats">
+          <div class="stat">
+            <div class="stat-value">{totalUniques.toLocaleString('fr-CA')}</div>
+            <div class="stat-label">Visiteurs uniques</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{totalPageviews.toLocaleString('fr-CA')}</div>
+            <div class="stat-label">Pages vues</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">
+              {totalUniques > 0 ? (totalPageviews / totalUniques).toFixed(1) : '—'}
+            </div>
+            <div class="stat-label">Pages / visiteur</div>
+          </div>
+        </div>
+      </section>
+
+      {daily.length > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Pages vues par jour</h2>
+          <div class="line-chart-wrap">
+            <span class="chart-max">{maxY.toLocaleString('fr-CA')}</span>
+            <svg class="line-chart" viewBox="0 0 600 200" preserveAspectRatio="none" role="img" aria-label="Pages vues quotidiennes">
+              <line x1="0" y1="0"   x2="600" y2="0"   class="chart-grid" />
+              <line x1="0" y1="90"  x2="600" y2="90"  class="chart-grid chart-grid-mid" />
+              <line x1="0" y1="180" x2="600" y2="180" class="chart-axis" />
+              <polyline points={uqPoints} class="chart-line chart-line-uq" />
+              <polyline points={pvPoints} class="chart-line chart-line-pv" />
+              {/* Invisible hit zones — one rectangle per day for hover tooltip */}
+              {daily.map((d, i) => {
+                const halfStep = xStep / 2;
+                const x = Math.max(0, i * xStep - halfStep);
+                const w = i === 0 || i === daily.length - 1
+                  ? Math.min(halfStep, chartW)
+                  : xStep;
+                return (
+                  <rect
+                    class="chart-hit"
+                    x={x}
+                    y={0}
+                    width={w}
+                    height={chartH}
+                    data-date={d.date}
+                    data-pv={d.pageviews}
+                    data-uq={d.uniques}
+                  />
+                );
+              })}
+            </svg>
+            <div class="chart-tooltip" hidden></div>
+            <div class="chart-x-labels">
+              <span>{fmtDate(firstDate)}</span>
+              <span>{fmtDate(lastDate)}</span>
+            </div>
+            <div class="chart-legend">
+              <span class="chart-legend-item"><span class="chart-swatch chart-swatch-pv"></span>Pages vues</span>
+              <span class="chart-legend-item"><span class="chart-swatch chart-swatch-uq"></span>Visiteurs uniques</span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <script is:inline>
+        (function () {
+          var wrap = document.querySelector('.line-chart-wrap');
+          if (!wrap) return;
+          var tooltip = wrap.querySelector('.chart-tooltip');
+          var hits = wrap.querySelectorAll('.chart-hit');
+          if (!tooltip || hits.length === 0) return;
+
+          function fmt(iso) {
+            var d = new Date(iso + 'T00:00:00Z');
+            return d.toLocaleDateString('fr-CA', { weekday: 'short', day: 'numeric', month: 'short' });
+          }
+
+          hits.forEach(function (hit) {
+            hit.addEventListener('mouseenter', function (e) {
+              var date = hit.getAttribute('data-date');
+              var pv = hit.getAttribute('data-pv');
+              var uq = hit.getAttribute('data-uq');
+              tooltip.innerHTML =
+                '<strong>' + fmt(date) + '</strong>' +
+                '<div>' + Number(pv).toLocaleString('fr-CA') + ' pages vues</div>' +
+                '<div>' + Number(uq).toLocaleString('fr-CA') + ' uniques</div>';
+              tooltip.hidden = false;
+            });
+            hit.addEventListener('mousemove', function (e) {
+              var rect = wrap.getBoundingClientRect();
+              tooltip.style.left = (e.clientX - rect.left + 14) + 'px';
+              tooltip.style.top = (e.clientY - rect.top + 14) + 'px';
+            });
+            hit.addEventListener('mouseleave', function () {
+              tooltip.hidden = true;
+            });
+          });
+        })();
+      </script>
+
+
+      {topPaths.length > 0 && (
+        <section class="admin-section">
+          <h2 class="admin-subtitle">Top pages</h2>
+          <div class="dist">
+            {topPaths.map(p => (
+              <div class="dist-row">
+                <span class="dist-label" title={p.path}>{p.path}</span>
+                <div class="dist-bar"><div class="dist-fill" style={`width:${widthPct(p.pageviews, maxPathPv)}%`}></div></div>
+                <span class="dist-count">{p.pageviews}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {configured && !queryError && daily.length === 0 && (
+        <section class="admin-section">
+          <p class="admin-meta">
+            Aucune donnée pour cette période. Vérifie que le snippet Cloudflare Web Analytics est bien injecté dans <code>Base.astro</code> et que le site reçoit du trafic.
+          </p>
+        </section>
+      )}
+
+    </div>
+  </main>
+
+  <footer>
+    <span>© 2026 Lacet</span>
+    <span class="footer-center">Admin</span>
+    <span>lacet.ca</span>
+  </footer>
+
+</Base>

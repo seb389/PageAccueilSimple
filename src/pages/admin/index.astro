@@ -1,0 +1,74 @@
+---
+import Base from '../../layouts/Base.astro';
+
+export const prerender = false;
+
+const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email') ?? 'admin';
+
+const sections: Array<{ href: string; title: string; description: string; iconPath: string }> = [
+  {
+    href: '/admin/survey',
+    title: 'Sondage',
+    description: 'Réponses, distributions, analyses croisées et détails par répondant.',
+    // Bar-chart icon
+    iconPath: '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+  },
+  {
+    href: '/admin/contest',
+    title: 'Concours',
+    description: 'Liste des participants au tirage, filtre par langue et région.',
+    // Gift icon
+    iconPath: '<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+  },
+  {
+    href: '/admin/analytics',
+    title: 'Analytiques',
+    description: 'Visiteurs uniques, pages vues et trafic (Cloudflare Web Analytics).',
+    // Eye icon
+    iconPath: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+  },
+];
+---
+<Base title="LACET · Admin" lang="fr" theme="light">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>Admin · Lacet</span>
+    </div>
+    <div class="corner-right">
+      <span class="admin-user">{userEmail}</span>
+      <a href="/cdn-cgi/access/logout?returnTo=https://lacet.ca/" class="back">Logout</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="admin-page">
+
+      <section class="admin-section">
+        <h1 class="admin-title">Tableau de bord</h1>
+        <p class="admin-meta">Choisissez une section.</p>
+
+        <div class="admin-home-grid">
+          {sections.map(s => (
+            <a href={s.href} class="admin-home-card">
+              <span class="admin-home-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" set:html={s.iconPath} />
+              </span>
+              <span class="admin-home-title">{s.title}</span>
+              <span class="admin-home-desc">{s.description}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <span>© 2026 Lacet</span>
+    <span class="footer-center">Admin</span>
+    <span>lacet.ca</span>
+  </footer>
+
+</Base>
