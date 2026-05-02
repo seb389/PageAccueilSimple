@@ -159,7 +159,7 @@ const FR: SurveyContent = {
         },
         {
           key: "bike_size", type: "radio", required: false,
-          label: "La taille de votre vélo ?",
+          label: "Quelle taille de vélo roulez-vous ?",
           options: [
             { value: "xxs", label: "XXS (44-46)" },
             { value: "xs",  label: "XS (47-50)" },
@@ -504,7 +504,7 @@ const EN: SurveyContent = {
         },
         {
           key: "bike_size", type: "radio", required: false,
-          label: "Your bike size?",
+          label: "What size of bike do you ride?",
           options: [
             { value: "xxs", label: "XXS (44-46)" },
             { value: "xs",  label: "XS (47-50)" },
