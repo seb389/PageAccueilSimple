@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   practice         TEXT NOT NULL,
   km_season        TEXT NOT NULL,
   bike_value       TEXT NOT NULL,
+  bike_size        TEXT,           -- nullable: question facultative
   maintenance      TEXT,           -- nullable: question conditionnelle (cachée si bike_value = 'none')
   maintenance_satisfaction INTEGER, -- nullable: échelle 1-5, conditionnelle (cachée si bike_value = 'none')
 

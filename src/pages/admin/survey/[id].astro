@@ -169,6 +169,10 @@ const title = response ? `LACET · Réponse #${response.id}` : 'LACET · Répons
                 <dd>{labelFor('km_season', response.km_season)}</dd>
               </div>
               <div class="detail-row">
+                <dt>Taille du vélo</dt>
+                <dd>{response.bike_size ? labelFor('bike_size', response.bike_size) : <em class="detail-empty">— (non renseigné)</em>}</dd>
+              </div>
+              <div class="detail-row">
                 <dt>Valeur du vélo actuel</dt>
                 <dd>{labelFor('bike_value', response.bike_value)}</dd>
               </div>

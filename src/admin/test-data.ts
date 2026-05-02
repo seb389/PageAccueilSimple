@@ -12,6 +12,7 @@ export interface SurveyResponse {
   practice: string;
   km_season: string;
   bike_value: string;
+  bike_size: string | null;
   gender: string | null;
   maintenance: string | null;
   maintenance_satisfaction: number | null;
@@ -40,11 +41,12 @@ export interface SurveyResponse {
   comments: string | null;
 }
 
-type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type' | 'main_concern' | 'nps' | 'rentals_per_season' | 'gender' | 'maintenance' | 'maintenance_satisfaction'> & {
+type RawResponse = Omit<SurveyResponse, 'id' | 'created_at' | 'contexts' | 'bike_type' | 'main_concern' | 'nps' | 'rentals_per_season' | 'gender' | 'bike_size' | 'maintenance' | 'maintenance_satisfaction'> & {
   contexts: string[];
   bike_type: string[];
   main_concern: string[];
   gender?: string;
+  bike_size?: string;
   maintenance?: string;
   maintenance_satisfaction?: number;
 };
@@ -482,6 +484,10 @@ export const TEST_RESPONSES: SurveyResponse[] = RAW.map(normalize).map((r, i) =>
         : genderRoll < 23 ? 'woman'
         : genderRoll < 24 ? 'nb_other'
         : null);
+  // Taille de cadre — distribution réaliste (M/L dominent, extrêmes plus rares),
+  // null occasionnel pour simuler les non-réponses (question facultative).
+  const bikeSizes = ['xxs', 'xs', 's', 'm', 'm', 'l', 'l', 'm', 's', 'xl', 'm', 'l', null] as const;
+  const bike_size: string | null = r.bike_size ?? bikeSizes[i % bikeSizes.length] ?? null;
   return {
     id: i + 1,
     created_at: ts.toISOString().replace('T', ' ').slice(0, 19),
@@ -489,6 +495,7 @@ export const TEST_RESPONSES: SurveyResponse[] = RAW.map(normalize).map((r, i) =>
     ip_country: r.ip_country,
     age: r.age, region: r.region, practice: r.practice, km_season: r.km_season, bike_value: r.bike_value,
     gender,
+    bike_size,
     maintenance,
     maintenance_satisfaction,
     interest: r.interest, rented_before: r.rented_before,

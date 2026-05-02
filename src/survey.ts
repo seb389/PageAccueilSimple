@@ -158,6 +158,18 @@ const FR: SurveyContent = {
           ],
         },
         {
+          key: "bike_size", type: "radio", required: false,
+          label: "La taille de votre vélo ?",
+          options: [
+            { value: "xxs", label: "XXS (44-46)" },
+            { value: "xs",  label: "XS (47-50)" },
+            { value: "s",   label: "S (51-53)" },
+            { value: "m",   label: "M (54-56)" },
+            { value: "l",   label: "L (57-59)" },
+            { value: "xl",  label: "XL (60-62)" },
+          ],
+        },
+        {
           key: "bike_value", type: "radio", required: true,
           label: "Valeur approximative de votre vélo actuel ?",
           options: [
@@ -488,6 +500,18 @@ const EN: SurveyContent = {
             { value: "1500_3000",  label: "1,500 to 3,000 km" },
             { value: "3000_5000",  label: "3,000 to 5,000 km" },
             { value: "over_5000",  label: "More than 5,000 km" },
+          ],
+        },
+        {
+          key: "bike_size", type: "radio", required: false,
+          label: "Your bike size?",
+          options: [
+            { value: "xxs", label: "XXS (44-46)" },
+            { value: "xs",  label: "XS (47-50)" },
+            { value: "s",   label: "S (51-53)" },
+            { value: "m",   label: "M (54-56)" },
+            { value: "l",   label: "L (57-59)" },
+            { value: "xl",  label: "XL (60-62)" },
           ],
         },
         {
