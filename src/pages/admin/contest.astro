@@ -76,7 +76,10 @@ const userEmail = Astro.request.headers.get('cf-access-authenticated-user-email'
       )}
 
       <section class="admin-section">
-        <h1 class="admin-title">Concours</h1>
+        <div class="admin-title-row">
+          <h1 class="admin-title">Concours</h1>
+          <a href="/admin/draw" class="admin-cta-link">Procéder au tirage →</a>
+        </div>
 
         {queryError ? (
           <p class="admin-empty">

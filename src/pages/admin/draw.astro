@@ -1,0 +1,209 @@
+---
+import Base from '../../layouts/Base.astro';
+import { env } from 'cloudflare:workers';
+import { TEST_CONTEST_ENTRIES } from '../../admin/test-contest-data';
+
+export const prerender = false;
+
+interface ContestEntry {
+  id: number;
+  name: string;
+  email: string;
+  lang: string;
+}
+
+const url = new URL(Astro.request.url);
+const isTest = url.searchParams.get('mode') === 'test';
+
+let entries: ContestEntry[] = [];
+let queryError = '';
+
+if (isTest) {
+  entries = TEST_CONTEST_ENTRIES.map(e => ({ ...e }));
+} else {
+  try {
+    const result = await (env as any).DB
+      .prepare('SELECT id, name, email, lang FROM contest_entries ORDER BY created_at ASC')
+      .all();
+    entries = (result.results ?? []) as ContestEntry[];
+  } catch (e) {
+    queryError = String((e as Error)?.message ?? e);
+  }
+}
+
+const total = entries.length;
+
+// Pass entries to the client as JSON — no PII leak risk since this page is behind Cloudflare Access
+const entriesJson = JSON.stringify(entries);
+---
+<Base title="LACET · Tirage" lang="fr">
+
+  <header class="corner">
+    <div class="corner-left">
+      <span class="dot"></span>
+      <span>Tirage · Lacet</span>
+    </div>
+    <div class="corner-right">
+      <a href="/admin/contest" class="back">← Retour</a>
+      <a href="/cdn-cgi/access/logout?returnTo=https://lacet.ca/" class="back">Logout</a>
+    </div>
+  </header>
+
+  <main class="centered">
+    <section class="draw">
+
+      <div class="mode-toggle draw-mode-toggle">
+        <a href="/admin/draw"           class={isTest ? '' : 'is-active'}>Données réelles</a>
+        <a href="/admin/draw?mode=test" class={isTest ? 'is-active' : ''}>Données test</a>
+      </div>
+
+      {isTest && (
+        <div class="test-banner draw-test-banner">
+          <strong>Mode test</strong> — {total} participant·e·s fictif·ve·s. Aucune donnée réelle.
+        </div>
+      )}
+
+      {queryError && (
+        <p class="draw-error">Erreur DB : {queryError}</p>
+      )}
+
+      {!queryError && total === 0 && (
+        <div class="draw-empty">
+          <span class="draw-label">Tirage</span>
+          <p class="draw-empty-msg">Aucun participant inscrit pour le moment.</p>
+          <a href="/admin/contest" class="draw-back-link">← Retour aux concours</a>
+        </div>
+      )}
+
+      {!queryError && total > 0 && (
+        <>
+          <div class="draw-stage" data-stage="initial">
+
+            {/* Initial state: count + button */}
+            <div class="draw-initial">
+              <span class="draw-label">Tirage du concours</span>
+              <div class="draw-count">
+                <span class="draw-count-value">{total}</span>
+                <span class="draw-count-unit">{total === 1 ? 'participant·e' : 'participant·e·s'}</span>
+              </div>
+              <button type="button" class="draw-btn" data-action="start">
+                <span>Lancer le tirage</span>
+                <span class="draw-btn-arrow" aria-hidden="true">→</span>
+              </button>
+            </div>
+
+            {/* Cycling state */}
+            <div class="draw-cycling" hidden>
+              <span class="draw-label">Tirage en cours…</span>
+              <div class="draw-cycling-name" data-cycling-name>—</div>
+            </div>
+
+            {/* Winner state */}
+            <div class="draw-winner" hidden>
+              <span class="draw-label draw-winner-prefix">Félicitations</span>
+              <div class="draw-winner-name" data-winner-name>—</div>
+              <div class="draw-winner-email" data-winner-email>—</div>
+              <div class="draw-winner-meta" data-winner-meta>—</div>
+              <div class="draw-actions">
+                <button type="button" class="draw-rerun" data-action="rerun">
+                  Relancer le tirage
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <script is:inline type="application/json" id="contest-entries" set:html={entriesJson}></script>
+
+          <script is:inline>
+            (function () {
+              var rawEl = document.getElementById('contest-entries');
+              if (!rawEl) return;
+              var entries = [];
+              try { entries = JSON.parse(rawEl.textContent || '[]'); } catch (e) { return; }
+              if (entries.length === 0) return;
+
+              var initial = document.querySelector('.draw-initial');
+              var cycling = document.querySelector('.draw-cycling');
+              var winner  = document.querySelector('.draw-winner');
+              var cyclingName = document.querySelector('[data-cycling-name]');
+              var winnerName  = document.querySelector('[data-winner-name]');
+              var winnerEmail = document.querySelector('[data-winner-email]');
+              var winnerMeta  = document.querySelector('[data-winner-meta]');
+
+              function setStage(stage) {
+                initial.hidden = stage !== 'initial';
+                cycling.hidden = stage !== 'cycling';
+                winner.hidden  = stage !== 'winner';
+              }
+
+              // Cryptographically uniform random index (avoids modulo bias for typical sizes)
+              function pickIndex(max) {
+                var arr = new Uint32Array(1);
+                crypto.getRandomValues(arr);
+                return arr[0] % max;
+              }
+
+              function startDraw() {
+                setStage('cycling');
+
+                var winnerIdx = pickIndex(entries.length);
+                var chosen = entries[winnerIdx];
+
+                // Animation parameters — total ~6.5 s, progressive deceleration
+                var totalDuration = 6500;
+                var startInterval = 40;   // ms between name swaps at start (very fast)
+                var endInterval = 380;    // ms between swaps near the end (slow)
+                var startTime = Date.now();
+
+                function tick() {
+                  var elapsed = Date.now() - startTime;
+                  if (elapsed >= totalDuration) {
+                    revealWinner(chosen);
+                    return;
+                  }
+                  var t = elapsed / totalDuration;
+                  // Ease-in cubic — interval grows progressively (motion slows)
+                  var interval = startInterval + (endInterval - startInterval) * Math.pow(t, 2.5);
+
+                  // Pick a random entry to display during cycling (visual filler)
+                  var displayIdx = pickIndex(entries.length);
+                  cyclingName.textContent = entries[displayIdx].name;
+
+                  setTimeout(tick, interval);
+                }
+                tick();
+              }
+
+              function revealWinner(w) {
+                winnerName.textContent = w.name;
+                winnerEmail.textContent = w.email;
+                var when = new Date().toLocaleString('fr-CA', {
+                  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit',
+                });
+                winnerMeta.textContent = 'Tiré le ' + when;
+                setStage('winner');
+              }
+
+              function rerunDraw() {
+                if (!confirm('Relancer le tirage ? Le résultat précédent sera remplacé.')) return;
+                setStage('initial');
+              }
+
+              document.addEventListener('click', function (e) {
+                var t = e.target.closest('[data-action]');
+                if (!t) return;
+                var action = t.getAttribute('data-action');
+                if (action === 'start') startDraw();
+                if (action === 'rerun') rerunDraw();
+              });
+            })();
+          </script>
+        </>
+      )}
+
+    </section>
+  </main>
+
+</Base>

@@ -1187,6 +1187,208 @@ const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID ?? '';
     border-bottom-color: var(--cuivre);
   }
 
+  /* Admin title row with CTA */
+  .admin-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .admin-title-row .admin-title { margin-bottom: 0; }
+  .admin-cta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 1px solid var(--cuivre);
+    border-radius: 3px;
+    color: var(--cuivre);
+    background: transparent;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .admin-cta-link:hover {
+    background: var(--cuivre);
+    color: var(--charbon);
+    text-decoration: none;
+  }
+
+  /* ── Draw page (admin contest tirage) ── */
+  .draw {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 40px 16px;
+  }
+  .draw-error {
+    color: #c45050;
+    background: rgba(196, 80, 80, 0.08);
+    border-left: 2px solid #c45050;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 13px;
+  }
+  .draw-empty {
+    padding: 60px 0;
+  }
+  .draw-empty-msg {
+    margin: 24px 0 28px;
+    color: var(--fumee);
+    font-size: 15px;
+  }
+  .draw-back-link {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fumee);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 4px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .draw-back-link:hover { color: var(--craie); border-color: var(--craie); }
+
+  .draw-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--fumee);
+    margin-bottom: 22px;
+  }
+  .draw-winner-prefix { color: var(--cuivre); }
+
+  /* Initial state */
+  .draw-initial {
+    padding: 30px 0;
+  }
+  .draw-count {
+    margin-bottom: 56px;
+  }
+  .draw-count-value {
+    display: block;
+    font-size: clamp(72px, 14vw, 144px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--craie);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .draw-count-unit {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--fumee);
+  }
+  .draw-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 36px;
+    background: transparent;
+    border: 1px solid var(--cuivre);
+    color: var(--cuivre);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  .draw-btn:hover {
+    background: var(--cuivre);
+    color: var(--charbon);
+    transform: translateY(-1px);
+  }
+  .draw-btn-arrow {
+    font-size: 14px;
+    transition: transform 0.25s ease;
+  }
+  .draw-btn:hover .draw-btn-arrow { transform: translateX(4px); }
+
+  /* Cycling state */
+  .draw-cycling {
+    padding: 30px 0;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .draw-cycling[hidden] { display: none; }
+  .draw-cycling-name {
+    font-size: clamp(34px, 6vw, 64px);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--craie);
+    line-height: 1.1;
+    min-height: 1.2em;
+    /* No transition — names swap instantly for the slot-machine feel */
+  }
+
+  /* Winner state */
+  .draw-winner {
+    padding: 30px 0;
+    animation: drawWinnerIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes drawWinnerIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .draw-winner-name {
+    font-size: clamp(40px, 7vw, 76px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--craie);
+    line-height: 1.05;
+    margin-bottom: 18px;
+  }
+  .draw-winner-email {
+    font-family: 'Menlo', 'Consolas', monospace;
+    font-size: 14px;
+    color: var(--cuivre);
+    margin-bottom: 12px;
+  }
+  .draw-winner-meta {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fumee);
+    margin-bottom: 40px;
+  }
+  .draw-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+  }
+  .draw-rerun {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--fumee);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .draw-rerun:hover {
+    border-color: var(--craie);
+    color: var(--craie);
+  }
+
   /* Admin home dashboard */
   .admin-home-grid {
     display: grid;
