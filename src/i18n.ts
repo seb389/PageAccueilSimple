@@ -10,7 +10,7 @@ export const ui = {
     tagline_left:       'Location',
     tagline_right:      'Vélo',
     status:             'Printemps 2027',
-    contact_label:      'Pour information',
+    contact_label:      'Pour nous rejoindre',
     footer_copy:        '© 2026 Lacet',
     footer_domain:      'lacet.ca',
     footer_privacy:     'Confidentialité',
@@ -27,7 +27,7 @@ export const ui = {
 
     // Survey CTA (home page)
     survey_cta_label:   'Sondage',
-    survey_cta_prompt:  'Aidez-nous à bâtir un service qui vous ressemble',
+    survey_cta_prompt:  'Aidez-nous à vous offrir un service à la hauteur de vos attentes.',
     survey_cta_button:  'Participer au sondage',
     survey_cta_href:    '/sondage',
 
@@ -101,7 +101,7 @@ export const ui = {
     tagline_left:       'Rental',
     tagline_right:      'Bike',
     status:             'Spring 2027',
-    contact_label:      'For information',
+    contact_label:      'Get in touch',
     footer_copy:        '© 2026 Lacet',
     footer_domain:      'lacet.ca',
     footer_privacy:     'Privacy',
@@ -118,7 +118,7 @@ export const ui = {
 
     // Survey CTA (home page)
     survey_cta_label:   'Survey',
-    survey_cta_prompt:  'Help us build a service that fits you',
+    survey_cta_prompt:  'Help us bring you a service that lives up to your expectations.',
     survey_cta_button:  'Take the survey',
     survey_cta_href:    '/en/sondage',
 
