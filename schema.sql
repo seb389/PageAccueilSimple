@@ -13,10 +13,9 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   region           TEXT NOT NULL,
   practice         TEXT NOT NULL,
   km_season        TEXT NOT NULL,
-  bike_value       TEXT NOT NULL,
   bike_size        TEXT,           -- nullable: question facultative
-  maintenance      TEXT,           -- nullable: question conditionnelle (cachée si bike_value = 'none')
-  maintenance_satisfaction INTEGER, -- nullable: échelle 1-5, conditionnelle (cachée si bike_value = 'none')
+  maintenance      TEXT NOT NULL,
+  maintenance_satisfaction INTEGER NOT NULL,
 
   -- Section 2 - Intérêt et contexte
   interest         INTEGER NOT NULL,

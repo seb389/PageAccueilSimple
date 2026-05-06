@@ -57,6 +57,7 @@ const ofLabel     = lang === 'fr' ? 'de' : 'of';
             data-showif-key={q.showIf?.key}
             data-showif-equals={q.showIf?.equals}
             data-showif-not-equals={q.showIf?.notEquals}
+            data-showif-not-equals-any={q.showIf && 'notEqualsAny' in q.showIf ? q.showIf.notEqualsAny?.join(',') : undefined}
             hidden={q.showIf != null}
           >
             <div class="q-label">
@@ -298,12 +299,14 @@ const ofLabel     = lang === 'fr' ? 'de' : 'of';
   }
 
   function isVisible(qEl) {
-    var parentKey = qEl.dataset.showifKey;
-    var equals    = qEl.dataset.showifEquals;
-    var notEquals = qEl.dataset.showifNotEquals;
+    var parentKey     = qEl.dataset.showifKey;
+    var equals        = qEl.dataset.showifEquals;
+    var notEquals     = qEl.dataset.showifNotEquals;
+    var notEqualsAny  = qEl.dataset.showifNotEqualsAny;
     var v = getCurrentValue(parentKey);
-    if (equals    !== undefined && equals    !== '') return v === equals;
-    if (notEquals !== undefined && notEquals !== '') return v != null && v !== notEquals;
+    if (equals       !== undefined && equals       !== '') return v === equals;
+    if (notEquals    !== undefined && notEquals    !== '') return v != null && v !== notEquals;
+    if (notEqualsAny !== undefined && notEqualsAny !== '') return v != null && notEqualsAny.split(',').indexOf(v) === -1;
     return true;
   }
 

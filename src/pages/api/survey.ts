@@ -8,7 +8,7 @@ export const prerender = false;
 // Build allowed-values sets from the FR version (EN mirrors the same slugs)
 const content = survey.fr;
 
-type ShowIf = { key: string; equals?: string; notEquals?: string };
+type ShowIf = { key: string; equals?: string; notEquals?: string; notEqualsAny?: string[] };
 
 type FieldSpec =
   | { type: 'radio'; column: string; required: boolean; values: Set<string>; showIf?: ShowIf }
@@ -44,6 +44,7 @@ function showIfMet(showIf: ShowIf | undefined, body: Record<string, unknown>): b
   const v = body[showIf.key];
   if (showIf.equals !== undefined) return v === showIf.equals;
   if (showIf.notEquals !== undefined) return typeof v === 'string' && v !== '' && v !== showIf.notEquals;
+  if (showIf.notEqualsAny !== undefined) return typeof v === 'string' && v !== '' && !showIf.notEqualsAny.includes(v);
   return true;
 }
 

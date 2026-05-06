@@ -5,7 +5,7 @@ export type Option = { value: string; label: string };
 // showIf: question is shown only when the parent question's answer matches.
 // `equals` = visible iff parent value === equals.
 // `notEquals` = visible iff parent value is set AND !== notEquals.
-export type ShowIf = { key: string; equals?: string; notEquals?: string };
+export type ShowIf = { key: string; equals?: string; notEquals?: string; notEqualsAny?: string[] };
 
 export type Question =
   | { key: string; type: 'radio'; label: string; required: boolean; options: Option[]; showIf?: ShowIf }
@@ -170,23 +170,10 @@ const FR: SurveyContent = {
           ],
         },
         {
-          key: "bike_value", type: "radio", required: true,
-          label: "Valeur approximative de votre vélo actuel ?",
-          options: [
-            { value: "none",          label: "Je n'ai pas de vélo en ce moment" },
-            { value: "under_1500",    label: "Moins de 1 500 $" },
-            { value: "1500_3000",     label: "1 500 à 3 000 $" },
-            { value: "3000_5000",     label: "3 000 à 5 000 $" },
-            { value: "5000_8000",     label: "5 000 à 8 000 $" },
-            { value: "8000_12000",    label: "8 000 à 12 000 $" },
-            { value: "over_12000",    label: "Plus de 12 000 $" },
-          ],
-        },
-        {
           key: "maintenance", type: "radio", required: true,
           label: "Comment faites-vous l'entretien et les réparations de votre vélo actuellement ?",
-          showIf: { key: "bike_value", notEquals: "none" },
           options: [
+            { value: "no_bike",      label: "Je n'ai pas de vélo" },
             { value: "all_self",     label: "Tout par moi-même" },
             { value: "mostly_self",  label: "Surtout par moi-même, boutique pour le gros entretien" },
             { value: "shop",         label: "Tout en boutique de vélo (détaillant ou chaîne)" },
@@ -196,7 +183,7 @@ const FR: SurveyContent = {
         {
           key: "maintenance_satisfaction", type: "scale", required: true,
           label: "Quel est votre niveau de satisfaction par rapport à votre solution actuelle d'entretien ?",
-          showIf: { key: "bike_value", notEquals: "none" },
+          showIf: { key: "maintenance", notEqualsAny: ["no_bike", "all_self"] },
           min: 1, max: 5,
           minLabel: "Pas satisfait",
           maxLabel: "Très satisfait",
@@ -515,23 +502,10 @@ const EN: SurveyContent = {
           ],
         },
         {
-          key: "bike_value", type: "radio", required: true,
-          label: "Approximate value of your current bike?",
-          options: [
-            { value: "none",          label: "I don't own a bike at the moment" },
-            { value: "under_1500",    label: "Less than $1,500" },
-            { value: "1500_3000",     label: "$1,500 to $3,000" },
-            { value: "3000_5000",     label: "$3,000 to $5,000" },
-            { value: "5000_8000",     label: "$5,000 to $8,000" },
-            { value: "8000_12000",    label: "$8,000 to $12,000" },
-            { value: "over_12000",    label: "More than $12,000" },
-          ],
-        },
-        {
           key: "maintenance", type: "radio", required: true,
           label: "How do you currently handle the maintenance and repairs of your bike?",
-          showIf: { key: "bike_value", notEquals: "none" },
           options: [
+            { value: "no_bike",      label: "I don't own a bike" },
             { value: "all_self",     label: "All by myself" },
             { value: "mostly_self",  label: "Mostly by myself, shop for major service" },
             { value: "shop",         label: "Entirely at a bike shop (independent or chain)" },
@@ -541,7 +515,7 @@ const EN: SurveyContent = {
         {
           key: "maintenance_satisfaction", type: "scale", required: true,
           label: "How satisfied are you with your current maintenance setup?",
-          showIf: { key: "bike_value", notEquals: "none" },
+          showIf: { key: "maintenance", notEqualsAny: ["no_bike", "all_self"] },
           min: 1, max: 5,
           minLabel: "Not satisfied",
           maxLabel: "Very satisfied",
