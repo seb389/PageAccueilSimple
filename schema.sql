@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   km_season        TEXT NOT NULL,
   bike_size        TEXT,           -- nullable: question facultative
   maintenance      TEXT NOT NULL,
-  maintenance_satisfaction INTEGER NOT NULL,
+  maintenance_satisfaction INTEGER,           -- nullable: hidden when maintenance = no_bike or all_self
 
   -- Section 2 - Intérêt et contexte
   interest         INTEGER NOT NULL,
@@ -38,7 +38,6 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   val_maintenance  TEXT NOT NULL,
   val_insurance    TEXT NOT NULL,
   val_exchange     TEXT NOT NULL,
-  val_coaching     TEXT NOT NULL,
   val_equipment    TEXT NOT NULL,
   val_purchase     TEXT NOT NULL,
   val_routes       TEXT NOT NULL,
