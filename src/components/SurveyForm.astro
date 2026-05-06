@@ -271,7 +271,7 @@ const ofLabel     = lang === 'fr' ? 'de' : 'of';
   // ── Step management ──────────────────────────────────────────────────
   var currentStep = 1;
 
-  function showStep(n) {
+  function showStep(n, scroll) {
     form.querySelectorAll('[data-step]').forEach(function(el) { el.hidden = true; });
     var stepEl = form.querySelector('[data-step="' + n + '"]');
     if (stepEl) stepEl.hidden = false;
@@ -286,7 +286,7 @@ const ofLabel     = lang === 'fr' ? 'de' : 'of';
 
     applyShowIf();
     clearError();
-    if (stepEl) stepEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (scroll && stepEl) stepEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   // ── Conditional questions (showIf) ───────────────────────────────────
@@ -401,13 +401,13 @@ const ofLabel     = lang === 'fr' ? 'de' : 'of';
     clearError();
     if (!validateCurrentStep()) return;
     currentStep++;
-    showStep(currentStep);
+    showStep(currentStep, true);
   });
 
   btnPrev.addEventListener('click', function() {
     clearError();
     currentStep--;
-    showStep(currentStep);
+    showStep(currentStep, true);
   });
 
   // ── Data collection ──────────────────────────────────────────────────
@@ -549,7 +549,7 @@ const ofLabel     = lang === 'fr' ? 'de' : 'of';
   });
 
   // ── Init ─────────────────────────────────────────────────────────────
-  showStep(1);
+  showStep(1, false);
 })();
 </script>
 
