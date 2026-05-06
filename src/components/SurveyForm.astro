@@ -134,13 +134,13 @@ const ofLabel     = lang === 'fr' ? 'de' : 'of';
                           <label class="matrix-cell">
                             <input type="radio" name={row.key} value={col.value} required={q.required} />
                             <span class="matrix-dot" aria-label={col.label}></span>
-                            <span class="matrix-cell-num" aria-hidden="true">{q.columns.length - i}</span>
+                            <span class="matrix-cell-num" aria-hidden="true">{i + 1}</span>
                           </label>
                         ))}
                       </div>
                       <div class="matrix-row-extremes" aria-hidden="true">
-                        <span>{q.columns[q.columns.length - 1].label}</span>
                         <span>{q.columns[0].label}</span>
+                        <span>{q.columns[q.columns.length - 1].label}</span>
                       </div>
                     </div>
                   ))}

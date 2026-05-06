@@ -321,10 +321,10 @@ const FR: SurveyContent = {
           key: "services_grid", type: "matrix", required: true,
           label: "Évaluez l'importance de chaque service pour vous.",
           columns: [
-            { value: "essential",      label: "Indispensable" },
-            { value: "interesting",    label: "Intéressant" },
-            { value: "low_priority",   label: "Peu important" },
             { value: "not_relevant",   label: "Pas pertinent" },
+            { value: "low_priority",   label: "Peu important" },
+            { value: "interesting",    label: "Intéressant" },
+            { value: "essential",      label: "Indispensable" },
           ],
           rows: [
             { key: "val_delivery",     label: "Livraison et récupération à domicile" },
@@ -653,10 +653,10 @@ const EN: SurveyContent = {
           key: "services_grid", type: "matrix", required: true,
           label: "Rate how important each service is for you.",
           columns: [
-            { value: "essential",      label: "Essential" },
-            { value: "interesting",    label: "Interesting" },
-            { value: "low_priority",   label: "Low priority" },
             { value: "not_relevant",   label: "Not relevant" },
+            { value: "low_priority",   label: "Low priority" },
+            { value: "interesting",    label: "Interesting" },
+            { value: "essential",      label: "Essential" },
           ],
           rows: [
             { key: "val_delivery",     label: "Home delivery and pickup" },
