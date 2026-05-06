@@ -13,6 +13,12 @@ const numberedSections = content.sections.map(section => ({
   ...section,
   questions: section.questions.map(q => ({ ...q, number: ++globalIndex })),
 }));
+
+const totalSteps = numberedSections.length;
+const nextLabel   = lang === 'fr' ? 'Suivant' : 'Next';
+const prevLabel   = lang === 'fr' ? 'Précédent' : 'Previous';
+const stepOfLabel = lang === 'fr' ? 'Étape' : 'Step';
+const ofLabel     = lang === 'fr' ? 'de' : 'of';
 ---
 
 <section class="survey" data-lang={lang}>
@@ -28,10 +34,16 @@ const numberedSections = content.sections.map(section => ({
   </header>
 
   <form class="survey-form" novalidate>
-    <p class="survey-required-note">{content.requiredNote}</p>
 
-    {numberedSections.map(section => (
-      <fieldset class="survey-section" data-section={section.id}>
+    <div class="survey-progress">
+      <span class="survey-progress-counter"></span>
+      <div class="survey-progress-track">
+        <div class="survey-progress-fill"></div>
+      </div>
+    </div>
+
+    {numberedSections.map((section, i) => (
+      <fieldset class="survey-section" data-step={i + 1} data-section={section.id} hidden={i !== 0}>
         <legend>
           <span class="survey-section-title">{section.title}</span>
           {section.intro && <span class="survey-section-intro" set:html={section.intro} />}
@@ -136,95 +148,85 @@ const numberedSections = content.sections.map(section => ({
             )}
           </div>
         ))}
+        {i === numberedSections.length - 1 && (
+          <>
+            <section class="survey-newsletter survey-contest">
+              <div class="survey-newsletter-head">
+                <span class="survey-newsletter-title">{content.contestOptIn.title}</span>
+                <p class="survey-newsletter-hint">{content.contestOptIn.hint}</p>
+              </div>
+              <label class="opt survey-nl-toggle">
+                <input type="checkbox" name="contest_optin" />
+                <span class="opt-custom opt-check"></span>
+                <span class="opt-label">{content.contestOptIn.enableLabel}</span>
+              </label>
+              <div class="survey-contest-fields" hidden>
+                <div class="contest-row">
+                  <input type="text" name="contest_name" autocomplete="name"
+                    placeholder={content.contestOptIn.namePlaceholder}
+                    aria-label={content.contestOptIn.namePlaceholder} />
+                </div>
+                <div class="contest-row">
+                  <input type="email" name="contest_email" inputmode="email" autocomplete="email"
+                    placeholder={content.contestOptIn.emailPlaceholder}
+                    aria-label={content.contestOptIn.emailPlaceholder} />
+                </div>
+                <label class="nl-consent survey-nl-consent">
+                  <input type="checkbox" name="contest_rules" />
+                  <span>
+                    {content.contestOptIn.rulesBefore}{' '}
+                    <a href={content.contestOptIn.rulesHref}>{content.contestOptIn.rulesLink}</a>{content.contestOptIn.rulesAfter}
+                  </span>
+                </label>
+              </div>
+            </section>
+
+            <section class="survey-newsletter">
+              <div class="survey-newsletter-head">
+                <span class="survey-newsletter-title">{content.newsletterOptIn.title}</span>
+                <p class="survey-newsletter-hint">{content.newsletterOptIn.hint}</p>
+              </div>
+              <label class="opt survey-nl-toggle">
+                <input type="checkbox" name="newsletter_optin" />
+                <span class="opt-custom opt-check"></span>
+                <span class="opt-label">{content.newsletterOptIn.enableLabel}</span>
+              </label>
+              <div class="survey-nl-fields" hidden>
+                <div class="nl-input-group">
+                  <input type="email" name="newsletter_email" inputmode="email" autocomplete="email"
+                    placeholder={content.newsletterOptIn.emailPlaceholder}
+                    aria-label={content.newsletterOptIn.emailPlaceholder} />
+                </div>
+                <label class="nl-consent survey-nl-consent">
+                  <input type="checkbox" name="newsletter_consent" />
+                  <span>
+                    {content.newsletterOptIn.consentBefore}{' '}
+                    <a href={content.newsletterOptIn.privacyHref}>{content.newsletterOptIn.consentLink}</a>{content.newsletterOptIn.consentAfter}
+                  </span>
+                </label>
+              </div>
+            </section>
+
+            <div class="survey-captcha">
+              <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-size="flexible"></div>
+            </div>
+          </>
+        )}
       </fieldset>
     ))}
 
-    <section class="survey-newsletter survey-contest">
-      <div class="survey-newsletter-head">
-        <span class="survey-newsletter-title">{content.contestOptIn.title}</span>
-        <p class="survey-newsletter-hint">{content.contestOptIn.hint}</p>
-      </div>
-
-      <label class="opt survey-nl-toggle">
-        <input type="checkbox" name="contest_optin" />
-        <span class="opt-custom opt-check"></span>
-        <span class="opt-label">{content.contestOptIn.enableLabel}</span>
-      </label>
-
-      <div class="survey-contest-fields" hidden>
-        <div class="contest-row">
-          <input
-            type="text"
-            name="contest_name"
-            autocomplete="name"
-            placeholder={content.contestOptIn.namePlaceholder}
-            aria-label={content.contestOptIn.namePlaceholder}
-          />
-        </div>
-        <div class="contest-row">
-          <input
-            type="email"
-            name="contest_email"
-            inputmode="email"
-            autocomplete="email"
-            placeholder={content.contestOptIn.emailPlaceholder}
-            aria-label={content.contestOptIn.emailPlaceholder}
-          />
-        </div>
-        <label class="nl-consent survey-nl-consent">
-          <input type="checkbox" name="contest_rules" />
-          <span>
-            {content.contestOptIn.rulesBefore}{' '}
-            <a href={content.contestOptIn.rulesHref}>{content.contestOptIn.rulesLink}</a>{content.contestOptIn.rulesAfter}
-          </span>
-        </label>
-      </div>
-    </section>
-
-    <section class="survey-newsletter">
-      <div class="survey-newsletter-head">
-        <span class="survey-newsletter-title">{content.newsletterOptIn.title}</span>
-        <p class="survey-newsletter-hint">{content.newsletterOptIn.hint}</p>
-      </div>
-
-      <label class="opt survey-nl-toggle">
-        <input type="checkbox" name="newsletter_optin" />
-        <span class="opt-custom opt-check"></span>
-        <span class="opt-label">{content.newsletterOptIn.enableLabel}</span>
-      </label>
-
-      <div class="survey-nl-fields" hidden>
-        <div class="nl-input-group">
-          <input
-            type="email"
-            name="newsletter_email"
-            inputmode="email"
-            autocomplete="email"
-            placeholder={content.newsletterOptIn.emailPlaceholder}
-            aria-label={content.newsletterOptIn.emailPlaceholder}
-          />
-        </div>
-        <label class="nl-consent survey-nl-consent">
-          <input type="checkbox" name="newsletter_consent" />
-          <span>
-            {content.newsletterOptIn.consentBefore}{' '}
-            <a href={content.newsletterOptIn.privacyHref}>{content.newsletterOptIn.consentLink}</a>{content.newsletterOptIn.consentAfter}
-          </span>
-        </label>
-      </div>
-    </section>
-
-    <div class="survey-captcha">
-      <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-size="flexible"></div>
-    </div>
-
     <p class="survey-error" role="alert" hidden></p>
 
-    <div class="survey-submit-row">
-      <button type="submit" class="survey-submit">
+    <p class="survey-required-note">{content.requiredNote}</p>
+
+    <div class="survey-nav">
+      <button type="button" class="survey-btn-prev" hidden>{prevLabel}</button>
+      <button type="button" class="survey-btn-next">{nextLabel}</button>
+      <button type="submit" class="survey-submit" hidden>
         <span class="submit-label">{content.submit}</span>
       </button>
     </div>
+
   </form>
 
 </section>
@@ -243,98 +245,113 @@ const numberedSections = content.sections.map(section => ({
     captcha_missing:        lang === 'fr' ? "Veuillez patienter — la vérification anti-bot se charge." : "Please wait — the anti-bot check is loading.",
     captcha_failed:         lang === 'fr' ? "Vérification anti-bot échouée. Rechargez la page et réessayez." : "Anti-bot verification failed. Please reload the page and try again.",
   },
-  submitLabel: content.submit,
+  submitLabel:     content.submit,
   submittingLabel: content.submitting,
+  TOTAL_STEPS:     totalSteps,
+  stepOfLabel:     stepOfLabel,
+  ofLabel:         ofLabel,
 }}>
 (function () {
   const form = document.querySelector('.survey-form');
   if (!form) return;
-  const errorEl = form.querySelector('.survey-error');
-  const button  = form.querySelector('.survey-submit');
-  const btnLabel = button.querySelector('.submit-label');
-  const lang    = document.querySelector('.survey').dataset.lang || 'fr';
+
+  const errorEl       = form.querySelector('.survey-error');
+  const btnSubmit     = form.querySelector('.survey-submit');
+  const btnLabel      = btnSubmit.querySelector('.submit-label');
+  const btnNext       = form.querySelector('.survey-btn-next');
+  const btnPrev       = form.querySelector('.survey-btn-prev');
+  const progressFill  = form.querySelector('.survey-progress-fill');
+  const progressCounter = form.querySelector('.survey-progress-counter');
+  const lang = document.querySelector('.survey').dataset.lang || 'fr';
 
   if (window.lacetTrack) {
     window.lacetTrack('ViewContent', { content_category: 'survey' });
   }
 
+  // ── Step management ──────────────────────────────────────────────────
+  var currentStep = 1;
+
+  function showStep(n) {
+    form.querySelectorAll('[data-step]').forEach(function(el) { el.hidden = true; });
+    var stepEl = form.querySelector('[data-step="' + n + '"]');
+    if (stepEl) stepEl.hidden = false;
+
+    var pct = ((n - 1) / (TOTAL_STEPS - 1)) * 100;
+    progressFill.style.width = pct + '%';
+    progressCounter.textContent = stepOfLabel + ' ' + n + ' ' + ofLabel + ' ' + TOTAL_STEPS;
+
+    btnPrev.hidden   = n === 1;
+    btnNext.hidden   = n === TOTAL_STEPS;
+    btnSubmit.hidden = n !== TOTAL_STEPS;
+
+    applyShowIf();
+    clearError();
+    document.querySelector('.survey').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   // ── Conditional questions (showIf) ───────────────────────────────────
-  const conditionals = Array.from(form.querySelectorAll('.q[data-showif-key]'));
+  var conditionals = Array.from(form.querySelectorAll('.q[data-showif-key]'));
 
   function getCurrentValue(parentKey) {
-    const checked = form.querySelector(
-      'input[type="radio"][name="' + CSS.escape(parentKey) + '"]:checked'
-    );
+    var checked = form.querySelector('input[type="radio"][name="' + CSS.escape(parentKey) + '"]:checked');
     return checked ? checked.value : null;
   }
 
   function isVisible(qEl) {
-    const parentKey = qEl.dataset.showifKey;
-    const equals = qEl.dataset.showifEquals;
-    const notEquals = qEl.dataset.showifNotEquals;
-    const v = getCurrentValue(parentKey);
-    if (equals !== undefined && equals !== '') return v === equals;
+    var parentKey = qEl.dataset.showifKey;
+    var equals    = qEl.dataset.showifEquals;
+    var notEquals = qEl.dataset.showifNotEquals;
+    var v = getCurrentValue(parentKey);
+    if (equals    !== undefined && equals    !== '') return v === equals;
     if (notEquals !== undefined && notEquals !== '') return v != null && v !== notEquals;
     return true;
   }
 
   function clearAnswers(qEl) {
-    qEl.querySelectorAll('input').forEach(inp => {
+    qEl.querySelectorAll('input').forEach(function(inp) {
       if (inp.type === 'radio' || inp.type === 'checkbox') inp.checked = false;
       else inp.value = '';
     });
-    qEl.querySelectorAll('textarea').forEach(t => (t.value = ''));
+    qEl.querySelectorAll('textarea').forEach(function(t) { t.value = ''; });
   }
 
   function applyShowIf() {
-    conditionals.forEach(qEl => {
-      const visible = isVisible(qEl);
-      if (qEl.hidden && visible) {
-        qEl.hidden = false;
-      } else if (!qEl.hidden && !visible) {
-        clearAnswers(qEl);
-        qEl.hidden = true;
-      }
+    conditionals.forEach(function(qEl) {
+      var visible = isVisible(qEl);
+      if (qEl.hidden && visible)       { qEl.hidden = false; }
+      else if (!qEl.hidden && !visible) { clearAnswers(qEl); qEl.hidden = true; }
     });
   }
 
   if (conditionals.length) {
     form.addEventListener('change', applyShowIf);
-    applyShowIf();
   }
 
-  const nlToggle = form.querySelector('input[name="newsletter_optin"]');
-  const nlFields = form.querySelector('.survey-nl-fields');
-  const nlEmail  = form.querySelector('input[name="newsletter_email"]');
-  const nlConsent= form.querySelector('input[name="newsletter_consent"]');
+  // ── Newsletter & Contest toggles ─────────────────────────────────────
+  var nlToggle = form.querySelector('input[name="newsletter_optin"]');
+  var nlFields = form.querySelector('.survey-nl-fields');
+  var nlEmail  = form.querySelector('input[name="newsletter_email"]');
+  var nlConsent= form.querySelector('input[name="newsletter_consent"]');
 
-  const ctToggle = form.querySelector('input[name="contest_optin"]');
-  const ctFields = form.querySelector('.survey-contest-fields');
-  const ctName   = form.querySelector('input[name="contest_name"]');
-  const ctEmail  = form.querySelector('input[name="contest_email"]');
-  const ctRules  = form.querySelector('input[name="contest_rules"]');
+  var ctToggle = form.querySelector('input[name="contest_optin"]');
+  var ctFields = form.querySelector('.survey-contest-fields');
+  var ctName   = form.querySelector('input[name="contest_name"]');
+  var ctEmail  = form.querySelector('input[name="contest_email"]');
+  var ctRules  = form.querySelector('input[name="contest_rules"]');
 
-  nlToggle.addEventListener('change', () => {
+  nlToggle.addEventListener('change', function() {
     nlFields.hidden = !nlToggle.checked;
-    if (!nlToggle.checked) {
-      nlEmail.value = '';
-      nlConsent.checked = false;
-    } else {
-      setTimeout(() => nlEmail.focus(), 50);
-    }
+    if (!nlToggle.checked) { nlEmail.value = ''; nlConsent.checked = false; }
+    else setTimeout(function() { nlEmail.focus(); }, 50);
   });
 
-  ctToggle.addEventListener('change', () => {
+  ctToggle.addEventListener('change', function() {
     ctFields.hidden = !ctToggle.checked;
-    if (!ctToggle.checked) {
-      ctName.value = '';
-      ctEmail.value = '';
-      ctRules.checked = false;
-    } else {
-      setTimeout(() => ctName.focus(), 50);
-    }
+    if (!ctToggle.checked) { ctName.value = ''; ctEmail.value = ''; ctRules.checked = false; }
+    else setTimeout(function() { ctName.focus(); }, 50);
   });
 
+  // ── Error display ────────────────────────────────────────────────────
   function showError(msg, scrollTarget) {
     errorEl.textContent = msg;
     errorEl.hidden = false;
@@ -342,86 +359,139 @@ const numberedSections = content.sections.map(section => ({
   }
   function clearError() { errorEl.hidden = true; errorEl.textContent = ''; }
 
-  function collect() {
-    const data = { lang };
-    const formData = new FormData(form);
+  // ── Per-step validation ──────────────────────────────────────────────
+  function validateCurrentStep() {
+    var stepEl = form.querySelector('[data-step="' + currentStep + '"]');
+    var qs = Array.from(stepEl.querySelectorAll('.q:not([hidden])'));
 
-    form.querySelectorAll('.q').forEach(qEl => {
-      if (qEl.hidden) return; // skip conditional questions whose parent answer hides them
-      const key = qEl.dataset.qkey;
-      const type = qEl.dataset.qtype;
-      const required = qEl.querySelector('.q-required') !== null;
+    for (var i = 0; i < qs.length; i++) {
+      var qEl     = qs[i];
+      var type    = qEl.dataset.qtype;
+      var required = qEl.querySelector('.q-required') !== null;
+      if (!required) continue;
 
       if (type === 'radio' || type === 'scale') {
-        const v = formData.get(key);
+        if (!qEl.querySelector('input[type="radio"]:checked')) {
+          showError(messages.required, qEl);
+          return false;
+        }
+      } else if (type === 'checkbox') {
+        var opts = qEl.querySelector('.q-options');
+        if (opts && opts.dataset.required === 'true') {
+          if (qEl.querySelectorAll('input[type="checkbox"]:checked').length === 0) {
+            showError(messages.required, qEl);
+            return false;
+          }
+        }
+      } else if (type === 'matrix') {
+        var matrixKeys = qEl.querySelector('.q-matrix').dataset.keys.split(',');
+        for (var k = 0; k < matrixKeys.length; k++) {
+          if (!qEl.querySelector('input[name="' + CSS.escape(matrixKeys[k]) + '"]:checked')) {
+            showError(messages.required, qEl);
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  // ── Navigation ───────────────────────────────────────────────────────
+  btnNext.addEventListener('click', function() {
+    clearError();
+    if (!validateCurrentStep()) return;
+    currentStep++;
+    showStep(currentStep);
+  });
+
+  btnPrev.addEventListener('click', function() {
+    clearError();
+    currentStep--;
+    showStep(currentStep);
+  });
+
+  // ── Data collection ──────────────────────────────────────────────────
+  function collect() {
+    var data = { lang: lang };
+    var formData = new FormData(form);
+
+    form.querySelectorAll('.q').forEach(function(qEl) {
+      if (qEl.hidden) return;
+      var key      = qEl.dataset.qkey;
+      var type     = qEl.dataset.qtype;
+      var required = qEl.querySelector('.q-required') !== null;
+
+      if (type === 'radio' || type === 'scale') {
+        var v = formData.get(key);
         if (v != null) data[key] = type === 'scale' ? Number(v) : v;
         else if (required) throw new Error('missing:' + key);
       } else if (type === 'checkbox') {
-        const vals = formData.getAll(key);
+        var vals = formData.getAll(key);
         if (required && vals.length === 0) throw new Error('missing:' + key);
         data[key] = vals;
       } else if (type === 'textarea') {
-        const v = formData.get(key);
-        data[key] = (v || '').trim();
+        var tv = formData.get(key);
+        data[key] = (tv || '').trim();
       } else if (type === 'matrix') {
-        const keys = qEl.querySelector('.q-matrix').dataset.keys.split(',');
-        for (const rowKey of keys) {
-          const v = formData.get(rowKey);
-          if (v != null) data[rowKey] = v;
-          else if (required) throw new Error('missing:' + rowKey);
+        var keys = qEl.querySelector('.q-matrix').dataset.keys.split(',');
+        for (var k = 0; k < keys.length; k++) {
+          var mv = formData.get(keys[k]);
+          if (mv != null) data[keys[k]] = mv;
+          else if (required) throw new Error('missing:' + keys[k]);
         }
       }
     });
 
     if (nlToggle.checked) {
-      const email = (nlEmail.value || '').trim().toLowerCase();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('invalid_email');
+      var nlMail = (nlEmail.value || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nlMail)) throw new Error('invalid_email');
       if (!nlConsent.checked) throw new Error('consent_required');
-      data.newsletter_optin = true;
-      data.newsletter_email = email;
+      data.newsletter_optin   = true;
+      data.newsletter_email   = nlMail;
       data.newsletter_consent = true;
     }
 
     if (ctToggle.checked) {
-      const name = (ctName.value || '').trim();
-      const email = (ctEmail.value || '').trim().toLowerCase();
+      var name   = (ctName.value  || '').trim();
+      var ctMail = (ctEmail.value || '').trim().toLowerCase();
       if (!name) throw new Error('contest_name_required');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('contest_email_invalid');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ctMail)) throw new Error('contest_email_invalid');
       if (!ctRules.checked) throw new Error('contest_rules_required');
       data.contest_optin = true;
-      data.contest_name = name;
-      data.contest_email = email;
+      data.contest_name  = name;
+      data.contest_email = ctMail;
       data.contest_rules = true;
     }
 
-    const captchaToken = formData.get('cf-turnstile-response');
+    var captchaToken = formData.get('cf-turnstile-response');
     if (!captchaToken) throw new Error('captcha_missing');
     data.captcha_token = String(captchaToken);
 
-    // Tracking consent (read from localStorage written by the consent banner)
     var consentRaw = '';
     try { consentRaw = localStorage.getItem('lacet_consent_v1') || ''; } catch (e) {}
     data.tracking_consent = consentRaw.indexOf('accepted:') === 0 ? 'accepted' : 'declined';
 
-    // Shared event_id for client/server dedup (Meta Lead event)
-    data.event_id = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+    data.event_id = (window.crypto && window.crypto.randomUUID)
+      ? window.crypto.randomUUID()
+      : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
 
     return data;
   }
 
-  form.addEventListener('submit', async (e) => {
+  // ── Submit ───────────────────────────────────────────────────────────
+  form.addEventListener('submit', async function(e) {
     e.preventDefault();
     clearError();
 
-    let payload;
+    var payload;
     try {
       payload = collect();
     } catch (err) {
-      const msg = String(err.message || '');
+      var msg = String(err.message || '');
       if (msg.startsWith('missing:')) {
-        const missingKey = msg.replace(/^missing:/, '');
-        const target = form.querySelector(`[name="${missingKey}"]`);
-        showError(messages.required, target?.closest('.q') || null);
+        var missingKey = msg.replace(/^missing:/, '');
+        var target = form.querySelector('[name="' + missingKey + '"]');
+        showError(messages.required, target ? target.closest('.q') : null);
       } else if (msg === 'invalid_email') {
         showError(messages.invalid_email, nlEmail.closest('.survey-newsletter'));
       } else if (msg === 'consent_required') {
@@ -442,42 +512,118 @@ const numberedSections = content.sections.map(section => ({
       return;
     }
 
-    button.disabled = true;
+    btnSubmit.disabled = true;
     btnLabel.textContent = submittingLabel;
 
     try {
-      const res = await fetch('/api/survey', {
+      var res = await fetch('/api/survey', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json().catch(() => ({ ok: false }));
+      var data = await res.json().catch(function() { return { ok: false }; });
       if (data.ok) {
-        // Fire Pixel Lead on the browser (with shared event_id for dedup with CAPI)
         if (payload.contest_optin && window.lacetTrack) {
           window.lacetTrack('Lead', { content_category: 'survey' }, payload.event_id);
         }
-        const base = lang === 'fr' ? '/merci-sondage' : '/en/thanks-survey';
-        const params = [];
-        if (payload.contest_optin) params.push('concours=1');
+        var base = lang === 'fr' ? '/merci-sondage' : '/en/thanks-survey';
+        var params = [];
+        if (payload.contest_optin)    params.push('concours=1');
         if (payload.newsletter_optin) params.push('infolettre=1');
         window.location.href = params.length ? base + '?' + params.join('&') : base;
       } else if (data.error === 'captcha_failed') {
         showError(messages.captcha_failed, form.querySelector('.survey-captcha'));
         if (window.turnstile) window.turnstile.reset();
-        button.disabled = false;
+        btnSubmit.disabled = false;
         btnLabel.textContent = submitLabel;
-        return;
       } else {
         showError(messages.default);
-        button.disabled = false;
+        btnSubmit.disabled = false;
         btnLabel.textContent = submitLabel;
       }
     } catch {
       showError(messages.network);
-      button.disabled = false;
+      btnSubmit.disabled = false;
       btnLabel.textContent = submitLabel;
     }
   });
+
+  // ── Init ─────────────────────────────────────────────────────────────
+  showStep(1);
 })();
 </script>
+
+<style is:global>
+  .survey-progress {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .survey-progress-counter {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fumee);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .survey-progress-track {
+    flex: 1;
+    height: 2px;
+    background: color-mix(in srgb, var(--fumee) 25%, transparent);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .survey-progress-fill {
+    height: 100%;
+    background: var(--cuivre);
+    border-radius: 1px;
+    transition: width 0.35s ease;
+    width: 0%;
+  }
+
+  .survey-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 48px;
+    gap: 1rem;
+  }
+  .survey-btn-prev {
+    background: transparent;
+    border: 1px solid var(--fumee);
+    color: var(--fumee);
+    padding: 14px 28px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    flex-shrink: 0;
+  }
+  .survey-btn-prev:hover {
+    border-color: var(--craie);
+    color: var(--craie);
+  }
+  .survey-btn-next {
+    margin-left: auto;
+    background: var(--craie);
+    color: var(--charbon);
+    border: none;
+    padding: 16px 40px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .survey-btn-next:hover {
+    background: var(--cuivre);
+    color: var(--craie);
+  }
+</style>

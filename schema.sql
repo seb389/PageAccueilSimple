@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   bike_type        TEXT NOT NULL,
   duration         TEXT NOT NULL,
   rentals_per_season TEXT NOT NULL,
-  purchase_intent  TEXT,           -- nullable: colonne ajoutée après création initiale
+  purchase_intent  INTEGER,        -- nullable: échelle 1-4 (1=Non, 4=Certainement)
 
   -- Section 4 - Prix
   price_week       TEXT NOT NULL,
