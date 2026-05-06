@@ -244,10 +244,10 @@ const FR: SurveyContent = {
           hint: "Cochez tout ce qui s'applique.",
           label: "Quel type de vélo seriez-vous intéressé à louer ?",
           options: [
-            { value: "climber",   label: "Vélo léger — Colnago V5Rs, S-Works Aethos, Cervélo R5" },
-            { value: "aero",      label: "Vélo aéro — S-Works Tarmac SL8, Cervélo S5, Colnago Y1Rs" },
-            { value: "endurance", label: "Vélo endurance — S-Works Roubaix, Trek Domane SLR, BMC Roadmachine 01" },
-            { value: "tt",        label: "Vélo TT — Cervélo P5, Trek Speed Concept, Argon 18 E-119 Tri+" },
+            { value: "aero",      label: "Vélo aéro route (performance vitesse)" },
+            { value: "endurance", label: "Vélo endurance route (confort longue distance)" },
+            { value: "climber",   label: "Vélo léger grimpeur" },
+            { value: "tt",        label: "Vélo TT (Triathlon)" },
           ],
         },
         {
@@ -271,6 +271,16 @@ const FR: SurveyContent = {
             { value: "four_six",    label: "4 à 6" },
             { value: "over_six",    label: "Plus de 6" },
             { value: "continuous",  label: "Une location continue de toute la saison" },
+          ],
+        },
+        {
+          key: "purchase_intent", type: "radio", required: true,
+          label: "À partir de 200 $/semaine, utiliseriez-vous le service Lacet ?",
+          options: [
+            { value: "definitely",      label: "Je l'utiliserais certainement" },
+            { value: "probably",        label: "Je l'utiliserais probablement" },
+            { value: "probably_not",    label: "Probablement pas" },
+            { value: "not_interested",  label: "Non, ce service ne m'intéresse pas" },
           ],
         },
       ],
@@ -366,13 +376,6 @@ const FR: SurveyContent = {
       id: "s6",
       title: "Freins et commentaires",
       questions: [
-        {
-          key: "nps", type: "scale", required: true,
-          label: "À quel point recommanderiez-vous ce service à un·e ami·e cycliste ?",
-          min: 0, max: 5,
-          minLabel: "Pas du tout probable",
-          maxLabel: "Extrêmement probable",
-        },
         {
           key: "main_concern", type: "checkbox", required: false,
           hint: "Cochez tout ce qui s'applique. Laissez vide si aucun frein.",
@@ -589,10 +592,10 @@ const EN: SurveyContent = {
           hint: "Check all that apply.",
           label: "Which type of bike would you be interested in renting?",
           options: [
-            { value: "climber",   label: "Lightweight — Colnago V5Rs, S-Works Aethos, Cervélo R5" },
-            { value: "aero",      label: "Aero — S-Works Tarmac SL8, Cervélo S5, Colnago Y1Rs" },
-            { value: "endurance", label: "Endurance — S-Works Roubaix, Trek Domane SLR, BMC Roadmachine 01" },
-            { value: "tt",        label: "TT — Cervélo P5, Trek Speed Concept, Argon 18 E-119 Tri+" },
+            { value: "aero",      label: "Aero road bike (speed performance)" },
+            { value: "endurance", label: "Endurance road bike (long-distance comfort)" },
+            { value: "climber",   label: "Lightweight climbing bike" },
+            { value: "tt",        label: "TT bike (Triathlon)" },
           ],
         },
         {
@@ -616,6 +619,16 @@ const EN: SurveyContent = {
             { value: "four_six",    label: "4 to 6" },
             { value: "over_six",    label: "More than 6" },
             { value: "continuous",  label: "One continuous rental for the whole season" },
+          ],
+        },
+        {
+          key: "purchase_intent", type: "radio", required: true,
+          label: "Starting at $200/week, would you use the Lacet service?",
+          options: [
+            { value: "definitely",      label: "I would definitely use it" },
+            { value: "probably",        label: "I would probably use it" },
+            { value: "probably_not",    label: "Probably not" },
+            { value: "not_interested",  label: "No, this service doesn't interest me" },
           ],
         },
       ],
@@ -711,13 +724,6 @@ const EN: SurveyContent = {
       id: "s6",
       title: "Concerns and comments",
       questions: [
-        {
-          key: "nps", type: "scale", required: true,
-          label: "How likely are you to recommend this service to a cyclist friend?",
-          min: 0, max: 5,
-          minLabel: "Not at all likely",
-          maxLabel: "Extremely likely",
-        },
         {
           key: "main_concern", type: "checkbox", required: false,
           hint: "Check all that apply. Leave blank if you have no concerns.",

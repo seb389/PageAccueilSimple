@@ -7,7 +7,7 @@
             stroke-linecap="round" stroke-linejoin="round"/>
     </mask>
   </defs>
-  <rect x="0" y="0" width="512" height="512" fill="#ffffff"/>
+  <rect x="0" y="0" width="512" height="512" fill="#AC9265"/>
   <path d="M 248.56 84.16 A 16 16 0 0 1 263.44 84.16 L 432.56 405.84 A 16 16 0 0 1 424 420 L 88 420 A 16 16 0 0 1 79.44 405.84 Z"
-        fill="#000000" mask="url(#s-cut)"/>
+        fill="#0E1A14" mask="url(#s-cut)"/>
 </svg>
