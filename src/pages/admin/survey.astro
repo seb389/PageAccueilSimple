@@ -42,7 +42,7 @@ function pct(n: number, total: number): string {
 function fmtDate(iso: string): string {
   if (!iso) return '';
   const d = new Date(iso.replace(' ', 'T') + 'Z');
-  return d.toLocaleString('fr-CA', { dateStyle: 'short', timeStyle: 'short' });
+  return d.toLocaleString('fr-CA', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Toronto' });
 }
 function maxN(arr: { n: number }[]): number {
   let m = 0;

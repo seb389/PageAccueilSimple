@@ -70,7 +70,7 @@ function matrixColLabel(value: string): string {
 function fmtDate(iso: string): string {
   if (!iso) return '';
   const d = new Date(iso.replace(' ', 'T') + 'Z');
-  return d.toLocaleString('fr-CA', { dateStyle: 'long', timeStyle: 'short' });
+  return d.toLocaleString('fr-CA', { dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Toronto' });
 }
 function parseJsonArray(value: string | null | undefined): string[] {
   if (!value) return [];
